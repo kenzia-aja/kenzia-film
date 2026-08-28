@@ -1,26 +1,274 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bebas), var(--font-jakarta), sans-serif;
+
+  /* â”€â”€ Palet monokrom hitam-putih + 1 aksen biru elektrik â”€â”€ */
+  --color-page: #0b0c0e; /* latar halaman: near-black netral */
+  --color-surface: #151719; /* kartu / panel */
+  --color-surface-2: #1e2124; /* permukaan terangkat */
+  --color-brand: #2563eb; /* aksen biru elektrik (blue-600) */
+  --color-brand-strong: #3b82f6; /* hover: biru lebih terang */
+  --color-brand-soft: #93c5fd; /* teks aksen lembut (blue-300) */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-page);
+  color: #f5f5f5;
+}
+
+::selection {
+  background: rgba(37, 99, 235, 0.4);
+}
+
+/* Scrollbar gelap netral */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-page);
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2e33;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a4046;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgb(28 30 33) 25%,
+    rgb(42 46 51) 50%,
+    rgb(28 30 33) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+
+
+/* â”€â”€ Motion creative â”€â”€ */
+
+/* Kilau menyapu tombol saat hover */
+@keyframes shine-sweep {
+  from {
+    transform: translateX(-160%) skewX(-18deg);
+  }
+  to {
+    transform: translateX(260%) skewX(-18deg);
+  }
+}
+
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.btn-shine::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 45%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+  transform: translateX(-160%) skewX(-18deg);
+  z-index: 1;
+}
+.btn-shine:hover::after {
+  animation: shine-sweep 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Ambient glow biru yang bernapas (blob di belakang hero) */
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.08);
+  }
+}
+.ambient-glow {
+  background: radial-gradient(
+    circle,
+    rgba(37, 99, 235, 0.26) 0%,
+    rgba(37, 99, 235, 0.07) 45%,
+    transparent 70%
+  );
+  animation: breathe 7s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Garis progres pada dot slide aktif */
+@keyframes dot-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.dot-progress {
+  transform-origin: left;
+  animation: dot-progress var(--slide-interval, 5s) linear both;
+}
+
+/* Titik "live" berdenyut */
+@keyframes pulse-dot {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(59, 130, 246, 0);
+  }
+}
+.pulse-dot {
+  animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Dorongan naik berayun (masuk dari bawah, kesan lembut & mengambang) */
+@keyframes float-in {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-float-in {
+  animation: float-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Badge/spark yang mengambang naik-turun */
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.animate-float-y {
+  animation: float-y 4.5s ease-in-out infinite;
+}
+
+/* Robekan bintang/partikel kecil berkilau */
+@keyframes sparkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.4) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) rotate(90deg);
+  }
+}
+.animate-sparkle {
+  animation: sparkle 3s ease-in-out infinite;
+}
+
+
+
+/* Border glow beranimasi mengalir (mengikuti sudut membulat) */
+@keyframes glow-spin {
+  to {
+    --stat-glow-angle: 360deg;
+  }
+}
+@property --stat-glow-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+.stat-glow {
+  border-radius: calc(1rem + 1px);
+  background: conic-gradient(
+    from var(--stat-glow-angle),
+    rgba(37, 99, 235, 0) 0%,
+    rgba(59, 130, 246, 0.55) 12%,
+    rgba(147, 197, 253, 0.35) 22%,
+    rgba(37, 99, 235, 0) 40%,
+    rgba(37, 99, 235, 0) 100%
+  );
+  animation: glow-spin 6s linear infinite;
+  filter: blur(4px);
+}
+.stat-glow:hover,
+.group\/stats:hover ~ .stat-glow {
+  opacity: 1;
+}
+
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-glow,
+  .pulse-dot,
+  .dot-progress,
+  .animate-float-in,
+  .animate-float-y,
+  .animate-sparkle,
+  .stat-glow {
+    animation: none !important;
+  }
+  .animate-float-in {
+    opacity: 1;
+  }
+  .btn-shine::after {
+    display: none;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
