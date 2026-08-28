@@ -353,10 +353,11 @@ const BLOCKED_HOSTS = ["minochinos.com", "filelions", "filelions.com"];
 
 /** Scrape daftar server dari satu halaman episode (verifikasi challenge verify_human). */
 async function scrapeServersOnDemand(pageUrl: string): Promise<VideoServer[]> {
-  // cookie jar sederhana untuk session verify_human
+  // cookie jar sederhana untuk session verify_human; maks 3 percobaan agar tidak menggantung
   const cookies = new Map<string, string>();
 
-  async function fetchPage(url: string): Promise<string> {
+  async function fetchPage(url: string, attempt = 0): Promise<string> {
+    if (attempt >= 3) throw new Error("Sumber tidak merespons (anti-bot)");
     const res = await fetch(url, {
       headers: {
         "User-Agent": USER_AGENT,
@@ -366,6 +367,7 @@ async function scrapeServersOnDemand(pageUrl: string): Promise<VideoServer[]> {
           : {}),
       },
       cache: "no-store",
+      signal: AbortSignal.timeout(8000),
     });
     const setCookies = res.headers.getSetCookie ? res.headers.getSetCookie() : [];
     for (const sc of setCookies) {
@@ -374,14 +376,15 @@ async function scrapeServersOnDemand(pageUrl: string): Promise<VideoServer[]> {
       if (eq > 0) cookies.set(pair.slice(0, eq).trim(), pair.slice(eq + 1).trim());
     }
     const text = await res.text();
-    // challenge anti-bot → verifikasi sekali lalu ulangi
+    // challenge anti-bot → verifikasi sekali lalu ulangi (dengan batas percobaan)
     if (text.length < 2000 && text.includes(CHALLENGE_MARKER)) {
       const origin = new URL(url).origin;
       await fetch(`${origin}/?verify_human=1`, {
         headers: { "User-Agent": USER_AGENT, ...(cookies.size > 0 ? { Cookie: [...cookies.entries()].map(([k, v]) => `${k}=${v}`).join("; ") } : {}) },
         cache: "no-store",
+        signal: AbortSignal.timeout(8000),
       });
-      return fetchPage(url);
+      return fetchPage(url, attempt + 1);
     }
     return text;
   }
