@@ -84,11 +84,6 @@ export default function VideoPlayer({ servers }: { servers: VideoServer[] }) {
             loading="lazy"
             className="absolute inset-0 h-full w-full border-0"
           />
-          {/* Menutupi watermark branding di pojok kanan-atas embed */}
-          <div
-            aria-hidden="true"
-            className="absolute right-0 top-0 z-10 h-10 w-36 bg-page"
-          />
         </div>
       )}
 
