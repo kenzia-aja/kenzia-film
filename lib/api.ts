@@ -317,6 +317,26 @@ export async function getEpisodeServers(slug: string, ep?: number): Promise<Sour
     return aPref - bPref;
   });
 
+  // Kalau belum ada server tersimpan, coba scrape on-demand (lazy) dari halaman sumber.
+  if (servers.length === 0 && epRow?.source_url) {
+    const scraped = await scrapeServersOnDemand(epRow.source_url);
+    if (scraped.length > 0) {
+      servers = scraped;
+      // cache hasil ke Supabase agar episode berikutnya langsung pakai cache
+      try {
+        const { sbPatch } = await import("./supabase");
+        await sbPatch(`/episodes?source_url=eq.${encodeURIComponent(epRow.source_url)}`, {
+          servers: scraped,
+          embeds: scraped.map((s) => s.embed),
+          stale: false,
+          checked_at: new Date().toISOString(),
+        });
+      } catch {
+        /* cache gagal — tidak fatal, next request akan scrape lagi */
+      }
+    }
+  }
+
   return {
     slug,
     episode: epNum,
@@ -324,6 +344,100 @@ export async function getEpisodeServers(slug: string, ep?: number): Promise<Sour
     servers,
     cached: true,
   };
+}
+
+const CHALLENGE_MARKER = "verify_human";
+const USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+const BLOCKED_HOSTS = ["minochinos.com", "filelions", "filelions.com"];
+
+/** Scrape daftar server dari satu halaman episode (verifikasi challenge verify_human). */
+async function scrapeServersOnDemand(pageUrl: string): Promise<VideoServer[]> {
+  // cookie jar sederhana untuk session verify_human
+  const cookies = new Map<string, string>();
+
+  async function fetchPage(url: string): Promise<string> {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": USER_AGENT,
+        Accept: "text/html,application/xhtml+xml",
+        ...(cookies.size > 0
+          ? { Cookie: [...cookies.entries()].map(([k, v]) => `${k}=${v}`).join("; ") }
+          : {}),
+      },
+      cache: "no-store",
+    });
+    const setCookies = res.headers.getSetCookie ? res.headers.getSetCookie() : [];
+    for (const sc of setCookies) {
+      const pair = sc.split(";")[0];
+      const eq = pair.indexOf("=");
+      if (eq > 0) cookies.set(pair.slice(0, eq).trim(), pair.slice(eq + 1).trim());
+    }
+    const text = await res.text();
+    // challenge anti-bot → verifikasi sekali lalu ulangi
+    if (text.length < 2000 && text.includes(CHALLENGE_MARKER)) {
+      const origin = new URL(url).origin;
+      await fetch(`${origin}/?verify_human=1`, {
+        headers: { "User-Agent": USER_AGENT, ...(cookies.size > 0 ? { Cookie: [...cookies.entries()].map(([k, v]) => `${k}=${v}`).join("; ") } : {}) },
+        cache: "no-store",
+      });
+      return fetchPage(url);
+    }
+    return text;
+  }
+
+  const html = await fetchPage(pageUrl);
+  return parseServerOptions(html, pageUrl);
+}
+
+/** Parse opsi server dari HTML halaman episode (base64 → src iframe). */
+function parseServerOptions(html: string, pageUrl: string): VideoServer[] {
+  const servers: VideoServer[] = [];
+  const seen = new Set<string>();
+  const isBlocked = (embed: string, name: string) =>
+    BLOCKED_HOSTS.some((h) => embed.toLowerCase().includes(h)) ||
+    /filelions/i.test(name);
+
+  // option[value][data-index] — value = base64 yang berisi src iframe
+  const optionRe = /<option[^>]*value=["']([^"']*)["'][^>]*data-index=["']([^"']*)["'][^>]*>([^<]*)<\/option>/gi;
+  let m: RegExpExecArray | null;
+  while ((m = optionRe.exec(html)) !== null) {
+    const raw = m[1].trim();
+    const idx = m[2].trim();
+    const name = (m[3] ?? "").trim() || `Server ${idx}`;
+    let decoded = "";
+    try {
+      decoded = Buffer.from(raw, "base64").toString("utf-8");
+    } catch {
+      continue;
+    }
+    const srcMatch = /src=["']([^"']+)["']/i.exec(decoded);
+    if (!srcMatch) continue;
+    const embed = new URL(srcMatch[1], pageUrl).toString();
+    if (seen.has(embed) || isBlocked(embed, name)) continue;
+    seen.add(embed);
+    servers.push({ name, embed, stream: null, working: true, ads: true });
+  }
+
+  // fallback: iframe biasa
+  if (servers.length === 0) {
+    const iframeRe = /<iframe[^>]*src=["']([^"']+)["']/gi;
+    while ((m = iframeRe.exec(html)) !== null) {
+      const src = m[1];
+      const embed = src.startsWith("//") ? `https:${src}` : new URL(src, pageUrl).toString();
+      if (seen.has(embed) || isBlocked(embed, "")) continue;
+      seen.add(embed);
+      servers.push({ name: "Default", embed, stream: null, working: true, ads: true });
+    }
+  }
+
+  // prioritas: Hydrax dulu
+  servers.sort((a, b) => {
+    const aPref = /hydrax/i.test(a.name) ? 0 : 1;
+    const bPref = /hydrax/i.test(b.name) ? 0 : 1;
+    return aPref - bPref;
+  });
+  return servers;
 }
 
 export async function getGenres(): Promise<GenresResponse> {

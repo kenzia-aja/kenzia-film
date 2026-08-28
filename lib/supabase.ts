@@ -54,3 +54,16 @@ export async function sbGet<T>(
   const total = count && contentRange?.includes("/") ? Number(contentRange.split("/")[1]) : null;
   return { data, total: Number.isFinite(total as number) ? total : null };
 }
+
+/** UPDATE via PostgREST; melempar Error bila gagal. */
+export async function sbPatch(path: string, body: unknown): Promise<void> {
+  const res = await fetch(`${REST}${path}`, {
+    method: "PATCH",
+    headers: headersFor(),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Supabase PATCH ${res.status} untuk ${path}: ${text.slice(0, 300)}`);
+  }
+}
