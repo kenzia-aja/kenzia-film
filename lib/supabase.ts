@@ -20,6 +20,8 @@ type Options = {
   params?: Record<string, string | number | undefined>;
   headers?: Record<string, string>;
   count?: boolean;
+  /** Detik cache Next.js (default 300 — data hanya berubah tiap cron 6 jam) */
+  revalidate?: number;
 };
 
 function headersFor(count?: boolean): Record<string, string> {
@@ -35,7 +37,7 @@ function headersFor(count?: boolean): Record<string, string> {
 /** GET dari PostgREST; mengembalikan JSON hasil atau melempar Error. */
 export async function sbGet<T>(
   path: string,
-  { params = {}, count = false }: Options = {}
+  { params = {}, count = false, revalidate = 300 }: Options = {}
 ): Promise<{ data: T; total: number | null }> {
   const search = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
@@ -43,7 +45,7 @@ export async function sbGet<T>(
   }
   const res = await fetch(`${REST}${path}?${search.toString()}`, {
     headers: headersFor(count),
-    cache: "no-store",
+    next: { revalidate },
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");

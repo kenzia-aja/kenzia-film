@@ -271,7 +271,8 @@ export async function getEpisodeServers(slug: string, ep?: number): Promise<Sour
     epNum = null;
   }
 
-  // Ambil kolom servers dari baris episode terkait (query sekali lagi, murah).
+  // Satu query saja: detail sudah memuat episodes(*) termasuk servers/embeds.
+  // revalidate 30s — cukup fresh untuk lazy on-demand yang baru menulis cache.
   const { sbGet } = await import("./supabase");
   const { data } = await sbGet<(SeriesRow & { episodes: EpisodeRow[] | null })[]>("/series", {
     params: {
@@ -279,6 +280,7 @@ export async function getEpisodeServers(slug: string, ep?: number): Promise<Sour
       "episodes.order": "number.asc.nullslast",
       slug: `eq.${slug}`,
     },
+    revalidate: 30,
   });
   const row = data[0];
   const epRows = row?.episodes ?? [];

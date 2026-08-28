@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import type { CardData } from "@/lib/card-data";
@@ -18,14 +19,15 @@ export default function SeriesCard({ data }: { data: CardData }) {
       <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-surface ring-1 ring-white/10 transition-all duration-300 group-hover:scale-[1.04] group-hover:shadow-2xl group-hover:shadow-black/70 group-hover:ring-brand/60">
         {!loaded && <div className="skeleton absolute inset-0" />}
         {data.poster && (
-          <img
+          <Image
             src={data.poster}
             alt={data.title}
+            fill
+            sizes="(max-width: 640px) 45vw, (max-width: 768px) 30vw, (max-width: 1024px) 22vw, 190px"
             loading="lazy"
-            decoding="async"
             onLoad={() => setLoaded(true)}
             onError={() => setLoaded(true)}
-            className={`h-full w-full object-cover transition-opacity duration-500 ${
+            className={`object-cover transition-opacity duration-500 ${
               loaded ? "opacity-100" : "opacity-0"
             }`}
           />

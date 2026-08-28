@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getSeriesDetail, type Series } from "@/lib/api";
@@ -45,11 +46,13 @@ export default async function SeriesDetailPage({ params }: { params: Params }) {
       <div className="relative">
         {series.poster && (
           <div className="absolute inset-x-0 top-0 h-[420px] overflow-hidden sm:h-[480px]">
-            <img
+            <Image
               src={series.poster}
               alt=""
               aria-hidden
-              className="h-full w-full scale-110 object-cover opacity-25 blur-2xl"
+              fill
+              sizes="100vw"
+              className="scale-110 object-cover opacity-25 blur-2xl"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-page/60 to-page" />
           </div>
@@ -58,12 +61,15 @@ export default async function SeriesDetailPage({ params }: { params: Params }) {
         <div className="relative mx-auto max-w-7xl px-4 pb-8 pt-28">
           <div className="flex flex-col gap-6 sm:flex-row sm:gap-8">
             <div className="w-44 shrink-0 sm:w-56">
-              <div className="overflow-hidden rounded-lg ring-1 ring-white/10 shadow-2xl shadow-black/60">
+              <div className="relative aspect-[2/3] overflow-hidden rounded-lg ring-1 ring-white/10 shadow-2xl shadow-black/60">
                 {series.poster ? (
-                  <img
+                  <Image
                     src={series.poster}
                     alt={series.title ?? slug}
-                    className="aspect-[2/3] w-full object-cover"
+                    fill
+                    priority
+                    sizes="(max-width: 640px) 60vw, 224px"
+                    className="object-cover"
                   />
                 ) : (
                   <div className="skeleton aspect-[2/3] w-full" />
