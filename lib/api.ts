@@ -165,6 +165,35 @@ const COUNTRY_ALIASES: Record<string, string> = {
 
 // ── Query utama ──
 
+/** Kolom first_seen_at mungkin belum ada di Supabase sebelum user menjalankan
+ *  ALTER — fallback otomatis ke last_scraped_at bila query gagal. */
+let firstSeenAvailable = true;
+
+function orderNewest(): string {
+  return firstSeenAvailable
+    ? "first_seen_at.desc.nullslast"
+    : "last_scraped_at.desc.nullslast";
+}
+
+async function sbGetWithOrderFallback<T>(
+  params: Record<string, string | number>,
+  count = false
+): Promise<{ data: T; total: number | null }> {
+  const { sbGet } = await import("./supabase");
+  try {
+    return await sbGet<T>("/series", { params: { ...params, order: orderNewest() }, count });
+  } catch (e) {
+    if (firstSeenAvailable && e instanceof Error && /first_seen_at/i.test(e.message)) {
+      firstSeenAvailable = false;
+      return sbGet<T>("/series", {
+        params: { ...params, order: "last_scraped_at.desc.nullslast" },
+        count,
+      });
+    }
+    throw e;
+  }
+}
+
 export async function getSeries(opts: {
   page?: number;
   limit?: number;
@@ -182,7 +211,6 @@ export async function getSeries(opts: {
     select: "*",
     limit,
     offset: (page - 1) * limit,
-    order: "last_scraped_at.desc.nullslast",
   };
   if (opts.q) params.title = `ilike.*${opts.q}*`;
   if (opts.type) params.type = `eq.${opts.type}`;
@@ -193,7 +221,7 @@ export async function getSeries(opts: {
   }
   if (opts.genre) params.genres = `cs.["${opts.genre}"]`;
 
-  const { data, total } = await sbGet<SeriesRow[]>("/series", { params, count: true });
+  const { data, total } = await sbGetWithOrderFallback<SeriesRow[]>(params, true);
   const totalCount = total ?? data.length;
   return {
     page,
@@ -207,18 +235,30 @@ export async function getSeries(opts: {
 export async function getLatest(page = 1): Promise<{ page: number; results: LatestCard[] }> {
   const { sbGet } = await import("./supabase");
   const limit = 16;
-  const { data } = await sbGet<
-    (SeriesRow & { episodes: { number: number | null }[] | null })[]
-  >("/series", {
-    params: {
-      select: "*,episodes(number,title)",
-      "episodes.order": "number.desc.nullslast",
-      "episodes.limit": "1",
-      limit,
-      offset: (page - 1) * limit,
-      order: "last_scraped_at.desc.nullslast",
-    },
-  });
+  const baseParams: Record<string, string | number> = {
+    select: "*,episodes(number,title)",
+    "episodes.order": "number.desc.nullslast",
+    "episodes.limit": "1",
+    limit,
+    offset: (page - 1) * limit,
+  };
+  let data: (SeriesRow & { episodes: { number: number | null }[] | null })[];
+  try {
+    ({ data } = await sbGet<(SeriesRow & { episodes: { number: number | null }[] | null })[]>(
+      "/series",
+      { params: { ...baseParams, order: orderNewest() } }
+    ));
+  } catch (e) {
+    if (firstSeenAvailable && e instanceof Error && /first_seen_at/i.test(e.message)) {
+      firstSeenAvailable = false;
+      ({ data } = await sbGet<(SeriesRow & { episodes: { number: number | null }[] | null })[]>(
+        "/series",
+        { params: { ...baseParams, order: "last_scraped_at.desc.nullslast" } }
+      ));
+    } else {
+      throw e;
+    }
+  }
 
   return {
     page,

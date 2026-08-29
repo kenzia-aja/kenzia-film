@@ -13,7 +13,7 @@ function first(value: string | string[] | undefined): string | undefined {
   return value ?? undefined;
 }
 
-const TYPES = ["Drama", "Movie", "TV Show"];
+const TYPES = ["Drama", "Movie", "Anime"];
 const STATUSES = ["Ongoing", "Completed"];
 
 function FilterRow({
