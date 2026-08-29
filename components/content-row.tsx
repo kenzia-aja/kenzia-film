@@ -1,14 +1,66 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import Reveal from "@/components/reveal";
 import SeriesCard from "@/components/series-card";
 import type { CardData } from "@/lib/card-data";
 
 /** Row konten yang bisa digeser horizontal (gaya IDLIX) dengan tombol prev/next
- *  + efek motion: kartu muncul berurutan (stagger) + scroll-snap. */
+ *  + efek motion: kartu muncul stagger + AUTO-SCROLL ping-pong (kiri↔kanan),
+ *  berhenti sementara saat user hover / menyentuh. */
 export default function ContentRow({ items }: { items: CardData[] }) {
   const track = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll ping-pong
+  useEffect(() => {
+    const el = track.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let raf = 0;
+    let dir = 1;
+    let paused = false;
+    let resumeTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const step = () => {
+      const max = el.scrollWidth - el.clientWidth;
+      if (!paused && max > 4) {
+        el.scrollLeft += dir * 0.6; // ±36px per detik
+        if (el.scrollLeft >= max - 1) dir = -1;
+        else if (el.scrollLeft <= 1) dir = 1;
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+
+    const pause = () => {
+      paused = true;
+      if (resumeTimer) clearTimeout(resumeTimer);
+    };
+    const resume = () => {
+      if (resumeTimer) clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(() => {
+        paused = false;
+      }, 2500);
+    };
+
+    const wrap = el.parentElement;
+    wrap?.addEventListener("mouseenter", pause);
+    wrap?.addEventListener("mouseleave", resume);
+    el.addEventListener("touchstart", pause, { passive: true });
+    el.addEventListener("touchend", resume, { passive: true });
+    el.addEventListener("wheel", pause, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      wrap?.removeEventListener("mouseenter", pause);
+      wrap?.removeEventListener("mouseleave", resume);
+      el.removeEventListener("touchstart", pause);
+      el.removeEventListener("touchend", resume);
+      el.removeEventListener("wheel", pause);
+      if (resumeTimer) clearTimeout(resumeTimer);
+    };
+  }, [items]);
 
   function scrollBy(dir: 1 | -1) {
     track.current?.scrollBy({ left: dir * 260, behavior: "smooth" });

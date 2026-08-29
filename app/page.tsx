@@ -153,10 +153,11 @@ function SectionTitle({
 }) {
   return (
     <div className="mb-4 flex items-center justify-between">
-      <h2 className="flex items-center gap-2.5 text-lg font-bold tracking-tight text-white sm:text-xl">
-        {/* Garis aksen primary biru */}
-        <span className="h-5 w-1 rounded-full bg-primary shadow-[0_0_12px_rgba(37,99,235,0.7)]" />
-        {title}
+      <h2 className="text-lg font-bold tracking-tight text-white sm:text-xl">
+        {/* Underline biru solid di bawah teks */}
+        <span className="inline-block border-b-2 border-primary pb-1">
+          {title}
+        </span>
       </h2>
       {href && (
         <Link
