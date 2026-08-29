@@ -195,16 +195,18 @@ async function UpdateRow({ type, title }: { type: "Drama" | "Movie"; title: stri
   );
 }
 
-/** Rekomendasi: film dengan rating tertinggi — 5 kolom × 8 baris */
-async function RecommendationGrid() {
+/** Rekomendasi (rating tertinggi): 3 baris × 5 kolom = 15 judul */
+async function RecommendationGrid({ type, title }: { type: "Movie" | "Drama"; title: string }) {
   const data = await tryTwice(() =>
-    getSeries({ type: "Movie", limit: 40, orderBy: "rating" })
+    getSeries({ type, limit: 15, orderBy: "rating" })
   );
   if (!data || data.results.length === 0) return null;
 
+  const browseUrl = type === "Movie" ? "/browse?type=Movie" : "/browse?type=Drama";
+
   return (
     <section className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-12">
-      <SectionTitle title="Rekomendasi Film" href="/browse?type=Movie" />
+      <SectionTitle title={title} href={browseUrl} />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {data.results.map((s, i) => (
           <Reveal key={s.slug} delay={(i % 5) * 50}>
@@ -213,6 +215,28 @@ async function RecommendationGrid() {
         ))}
       </div>
     </section>
+  );
+}
+
+/** Tombol "Lihat Semua" di akhir halaman (gaya sebelumnya) */
+async function SeeAllButton() {
+  let total: number | null = null;
+  try {
+    const h = await getHealth();
+    total = h.cached_series || null;
+  } catch {
+    total = null;
+  }
+
+  return (
+    <div className="text-center">
+      <Link
+        href="/browse"
+        className="btn-shine inline-flex items-center gap-2 rounded-md bg-brand px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand/30 ring-1 ring-brand-strong/50 transition duration-300 hover:scale-[1.03] hover:bg-brand-strong hover:shadow-brand/50"
+      >
+        Lihat Semua{total ? ` ${total.toLocaleString("id-ID")}` : ""} Judul →
+      </Link>
+    </div>
   );
 }
 
@@ -240,9 +264,19 @@ export default function HomePage() {
           <UpdateRow type="Movie" title="Update Film" />
         </Suspense>
 
-        <Suspense fallback={<GridSkeleton count={16} />}>
-          <RecommendationGrid />
+        <Suspense fallback={<GridSkeleton count={15} />}>
+          <RecommendationGrid type="Movie" title="Rekomendasi Film" />
         </Suspense>
+
+        <Suspense fallback={<GridSkeleton count={15} />}>
+          <RecommendationGrid type="Drama" title="Rekomendasi Series" />
+        </Suspense>
+
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-12">
+          <Suspense fallback={null}>
+            <SeeAllButton />
+          </Suspense>
+        </div>
       </div>
     </div>
   );
