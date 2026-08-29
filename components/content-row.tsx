@@ -1,70 +1,13 @@
 ﻿"use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import SeriesCard from "@/components/series-card";
 import type { CardData } from "@/lib/card-data";
 
-/** Row konten horizontal (gaya IDLIX): tombol prev/next + AUTO-SCROLL ping-pong
- *  (kiriâ†”kanan), berhenti sementara saat user hover / menyentuh.
- *  Ukuran kartu = 5 per layar di desktop, sama dengan grid rekomendasi. */
+/** Row konten horizontal (gaya IDLIX): tombol prev/next + scroll manual/snap.
+ *  Auto-scroll dihapus sesuai permintaan. */
 export default function ContentRow({ items }: { items: CardData[] }) {
   const track = useRef<HTMLDivElement>(null);
-
-  // Auto-scroll ping-pong
-  useEffect(() => {
-    const el = track.current;
-    if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    let raf = 0;
-    let dir = 1;
-    let paused = true; // mulai setelah jeda 2 dtk â€” judul & pojok kartu sejajar dulu
-    let resumeTimer: ReturnType<typeof setTimeout> | null = null;
-
-    const step = () => {
-      const max = el.scrollWidth - el.clientWidth;
-      if (!paused && max > 4) {
-        el.scrollLeft += dir * 0.6; // Â±36px per detik
-        if (el.scrollLeft >= max - 1) dir = -1;
-        else if (el.scrollLeft <= 1) dir = 1;
-      }
-      raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-
-    // Mulai auto-scroll setelah 2 detik
-    resumeTimer = setTimeout(() => {
-      paused = false;
-    }, 2000);
-
-    const pause = () => {
-      paused = true;
-      if (resumeTimer) clearTimeout(resumeTimer);
-    };
-    const resume = () => {
-      if (resumeTimer) clearTimeout(resumeTimer);
-      resumeTimer = setTimeout(() => {
-        paused = false;
-      }, 2500);
-    };
-
-    const wrap = el.parentElement;
-    wrap?.addEventListener("mouseenter", pause);
-    wrap?.addEventListener("mouseleave", resume);
-    el.addEventListener("touchstart", pause, { passive: true });
-    el.addEventListener("touchend", resume, { passive: true });
-    el.addEventListener("wheel", pause, { passive: true });
-
-    return () => {
-      cancelAnimationFrame(raf);
-      wrap?.removeEventListener("mouseenter", pause);
-      wrap?.removeEventListener("mouseleave", resume);
-      el.removeEventListener("touchstart", pause);
-      el.removeEventListener("touchend", resume);
-      el.removeEventListener("wheel", pause);
-      if (resumeTimer) clearTimeout(resumeTimer);
-    };
-  }, [items]);
 
   function scrollBy(dir: 1 | -1) {
     track.current?.scrollBy({ left: dir * 260, behavior: "smooth" });
@@ -95,7 +38,7 @@ export default function ContentRow({ items }: { items: CardData[] }) {
 
       <div
         ref={track}
-        className="no-scrollbar hscroll -mx-4 flex gap-3 overflow-x-auto scroll-smooth px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-12 lg:px-12"
+        className="no-scrollbar hscroll -mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-12 lg:px-12"
       >
         {items.map((item, i) => (
           <div
