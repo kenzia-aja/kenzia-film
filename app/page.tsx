@@ -11,7 +11,7 @@ import StatsBar from "@/components/stats-bar";
 import JisooGallery from "@/components/jisoo-gallery";
 import ContentRow from "@/components/content-row";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 const HERO_PHOTO_DIR = path.join(process.cwd(), "public", "jisoo");
 
