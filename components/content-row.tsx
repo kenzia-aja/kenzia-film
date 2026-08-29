@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef } from "react";
 import SeriesCard from "@/components/series-card";
 import type { CardData } from "@/lib/card-data";
 
 /** Row konten horizontal (gaya IDLIX): tombol prev/next + AUTO-SCROLL ping-pong
- *  (kiri↔kanan), berhenti sementara saat user hover / menyentuh.
+ *  (kiriâ†”kanan), berhenti sementara saat user hover / menyentuh.
  *  Ukuran kartu = 5 per layar di desktop, sama dengan grid rekomendasi. */
 export default function ContentRow({ items }: { items: CardData[] }) {
   const track = useRef<HTMLDivElement>(null);
@@ -18,19 +18,24 @@ export default function ContentRow({ items }: { items: CardData[] }) {
 
     let raf = 0;
     let dir = 1;
-    let paused = false;
+    let paused = true; // mulai setelah jeda 2 dtk â€” judul & pojok kartu sejajar dulu
     let resumeTimer: ReturnType<typeof setTimeout> | null = null;
 
     const step = () => {
       const max = el.scrollWidth - el.clientWidth;
       if (!paused && max > 4) {
-        el.scrollLeft += dir * 0.6; // ±36px per detik
+        el.scrollLeft += dir * 0.6; // Â±36px per detik
         if (el.scrollLeft >= max - 1) dir = -1;
         else if (el.scrollLeft <= 1) dir = 1;
       }
       raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
+
+    // Mulai auto-scroll setelah 2 detik
+    resumeTimer = setTimeout(() => {
+      paused = false;
+    }, 2000);
 
     const pause = () => {
       paused = true;
@@ -90,12 +95,12 @@ export default function ContentRow({ items }: { items: CardData[] }) {
 
       <div
         ref={track}
-        className="no-scrollbar hscroll -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-12 lg:px-12"
+        className="no-scrollbar hscroll -mx-4 flex gap-3 overflow-x-auto scroll-smooth px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-12 lg:px-12"
       >
         {items.map((item, i) => (
           <div
             key={`${item.href}-${i}`}
-            className="w-[calc(50%-0.375rem)] shrink-0 snap-start sm:w-[calc(33.333%-0.5rem)] md:w-[calc(25%-0.5625rem)] lg:w-[calc(20%-0.6rem)]"
+            className="w-[calc(50%-0.375rem)] shrink-0 sm:w-[calc(33.333%-0.5rem)] md:w-[calc(25%-0.5625rem)] lg:w-[calc(20%-0.6rem)]"
           >
             <SeriesCard data={item} />
           </div>
