@@ -172,14 +172,17 @@ const COUNTRY_ALIASES: Record<string, string> = {
 
 // ── Query utama ──
 
-/** Kolom first_seen_at mungkin belum ada di Supabase sebelum user menjalankan
- *  ALTER — fallback otomatis ke last_scraped_at bila query gagal. */
-let firstSeenAvailable = true;
+/** Urutan "terbaru": last_update_at (merge episode terbaru) → first_seen → last_scraped.
+ *  Fallback berlapis bila kolom belum ada di Supabase. */
+let orderFallbackLevel = 0;
 
 function orderNewest(): string {
-  return firstSeenAvailable
-    ? "first_seen_at.desc.nullslast"
-    : "last_scraped_at.desc.nullslast";
+  const chain = [
+    "last_update_at.desc.nullslast",
+    "first_seen_at.desc.nullslast",
+    "last_scraped_at.desc.nullslast",
+  ];
+  return chain[Math.min(orderFallbackLevel, chain.length - 1)];
 }
 
 async function sbGetWithOrderFallback<T>(
@@ -192,10 +195,12 @@ async function sbGetWithOrderFallback<T>(
   try {
     return await sbGet<T>("/series", { params: { ...params, order }, count });
   } catch (e) {
-    if (firstSeenAvailable && !orderOverride && e instanceof Error && /first_seen_at/i.test(e.message)) {
-      firstSeenAvailable = false;
+    const msg = e instanceof Error ? e.message : String(e);
+    const missing = /last_update_at|first_seen_at/i.test(msg);
+    if (missing && orderFallbackLevel < 2 && !orderOverride) {
+      orderFallbackLevel += 1;
       return sbGet<T>("/series", {
-        params: { ...params, order: "last_scraped_at.desc.nullslast" },
+        params: { ...params, order: orderNewest() },
         count,
       });
     }
@@ -273,11 +278,12 @@ export async function getLatest(page = 1): Promise<{ page: number; results: Late
       { params: { ...baseParams, order: orderNewest() } }
     ));
   } catch (e) {
-    if (firstSeenAvailable && e instanceof Error && /first_seen_at/i.test(e.message)) {
-      firstSeenAvailable = false;
+    const msg = e instanceof Error ? e.message : String(e);
+    if (/last_update_at|first_seen_at/i.test(msg) && orderFallbackLevel < 2) {
+      orderFallbackLevel += 1;
       ({ data } = await sbGet<(SeriesRow & { episodes: { number: number | null }[] | null })[]>(
         "/series",
-        { params: { ...baseParams, order: "last_scraped_at.desc.nullslast" } }
+        { params: { ...baseParams, order: orderNewest() } }
       ));
     } else {
       throw e;
