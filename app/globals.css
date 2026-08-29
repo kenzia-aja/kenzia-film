@@ -11,6 +11,16 @@
   --color-brand: #2563eb; /* aksen biru elektrik (blue-600) */
   --color-brand-strong: #3b82f6; /* hover: biru lebih terang */
   --color-brand-soft: #93c5fd; /* teks aksen lembut (blue-300) */
+  /* Alias token gaya IDLIX (dipakai section homepage) */
+  --color-primary: #2563eb;
+  --color-primary-strong: #3b82f6;
+  --color-primary-soft: #93c5fd;
+  --color-text-primary: #f4f5f7;
+  --color-text-muted: #9ba1ab;
+  --color-bg-card: #151719;
+  --color-bg-elevated: #1e2124;
+  --color-bg-hover: #23262c;
+  --color-border: rgba(255, 255, 255, 0.08);
 }
 
 html {

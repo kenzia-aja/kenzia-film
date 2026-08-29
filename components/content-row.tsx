@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Reveal from "@/components/reveal";
 import SeriesCard from "@/components/series-card";
 import type { CardData } from "@/lib/card-data";
 
-/** Row konten yang bisa digeser horizontal (gaya IDLIX) dengan tombol prev/next
- *  + efek motion: kartu muncul stagger + AUTO-SCROLL ping-pong (kiri↔kanan),
- *  berhenti sementara saat user hover / menyentuh. */
+/** Row konten horizontal (gaya IDLIX): tombol prev/next + AUTO-SCROLL ping-pong
+ *  (kiri↔kanan), berhenti sementara saat user hover / menyentuh.
+ *  Ukuran kartu = 5 per layar di desktop, sama dengan grid rekomendasi. */
 export default function ContentRow({ items }: { items: CardData[] }) {
   const track = useRef<HTMLDivElement>(null);
 
@@ -96,11 +95,9 @@ export default function ContentRow({ items }: { items: CardData[] }) {
         {items.map((item, i) => (
           <div
             key={`${item.href}-${i}`}
-            className="w-[140px] shrink-0 snap-start sm:w-[170px] md:w-[190px]"
+            className="w-[calc(50%-0.375rem)] shrink-0 snap-start sm:w-[calc(33.333%-0.5rem)] md:w-[calc(25%-0.5625rem)] lg:w-[calc(20%-0.6rem)]"
           >
-            <Reveal delay={(i % 8) * 60} className="reveal-x">
-              <SeriesCard data={item} />
-            </Reveal>
+            <SeriesCard data={item} />
           </div>
         ))}
       </div>
