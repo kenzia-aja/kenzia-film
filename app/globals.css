@@ -48,6 +48,20 @@ body {
   scrollbar-width: none;
 }
 
+/* Track horizontal: cegah scroll-jack vertikal + lembut di sentuh */
+.hscroll {
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+}
+
+/* Varian reveal untuk baris horizontal: slide dari kanan */
+.reveal.reveal-x {
+  transform: translateX(48px);
+}
+.reveal.reveal-x.is-visible {
+  transform: translateX(0);
+}
+
 @keyframes shimmer {
   0% {
     background-position: -400px 0;
@@ -270,5 +284,8 @@ body {
     opacity: 1;
     transform: none;
     transition: none;
+  }
+  .reveal.reveal-x {
+    transform: none;
   }
 }

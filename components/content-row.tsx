@@ -39,14 +39,14 @@ export default function ContentRow({ items }: { items: CardData[] }) {
 
       <div
         ref={track}
-        className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-12 lg:px-12"
+        className="no-scrollbar hscroll -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-12 lg:px-12"
       >
         {items.map((item, i) => (
           <div
             key={`${item.href}-${i}`}
             className="w-[140px] shrink-0 snap-start sm:w-[170px] md:w-[190px]"
           >
-            <Reveal delay={(i % 8) * 60}>
+            <Reveal delay={(i % 8) * 60} className="reveal-x">
               <SeriesCard data={item} />
             </Reveal>
           </div>

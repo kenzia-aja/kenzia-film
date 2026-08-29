@@ -153,7 +153,11 @@ function SectionTitle({
 }) {
   return (
     <div className="mb-4 flex items-center justify-between">
-      <h2 className="text-lg font-bold tracking-tight text-white sm:text-xl">{title}</h2>
+      <h2 className="flex items-center gap-2.5 text-lg font-bold tracking-tight text-white sm:text-xl">
+        {/* Garis aksen primary biru */}
+        <span className="h-5 w-1 rounded-full bg-primary shadow-[0_0_12px_rgba(37,99,235,0.7)]" />
+        {title}
+      </h2>
       {href && (
         <Link
           href={href}
@@ -180,17 +184,31 @@ async function tryTwice<T>(fn: () => Promise<T>): Promise<T | null> {
   }
 }
 
+/** Hanya series yang punya video bisa diputar (servers/embeds terisi) */
+function playableOnly(results: Awaited<ReturnType<typeof getSeries>>["results"]) {
+  return results.filter((s) =>
+    (s.episodes ?? []).some(
+      (e) => (e.servers?.length ?? 0) > 0 || (e.embeds?.length ?? 0) > 0
+    )
+  );
+}
+
 /** Baris "Update Terbaru" (horizontal scroll + motion) */
 async function UpdateRow({ type, title }: { type: "Drama" | "Movie"; title: string }) {
-  const data = await tryTwice(() => getSeries({ type, limit: 16 }));
+  const data = await tryTwice(() =>
+    getSeries({ type, limit: 24, withEpisodes: true })
+  );
   if (!data || data.results.length === 0) return null;
+
+  const playable = playableOnly(data.results).slice(0, 16);
+  if (playable.length === 0) return null;
 
   const browseUrl = type === "Movie" ? "/browse?type=Movie" : "/browse?type=Drama";
 
   return (
     <section className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-12">
       <SectionTitle title={title} href={browseUrl} />
-      <ContentRow items={data.results.map(toSeriesCard)} />
+      <ContentRow items={playable.map(toSeriesCard)} />
     </section>
   );
 }
@@ -198,9 +216,12 @@ async function UpdateRow({ type, title }: { type: "Drama" | "Movie"; title: stri
 /** Rekomendasi (rating tertinggi): 3 baris × 5 kolom = 15 judul */
 async function RecommendationGrid({ type, title }: { type: "Movie" | "Drama"; title: string }) {
   const data = await tryTwice(() =>
-    getSeries({ type, limit: 15, orderBy: "rating" })
+    getSeries({ type, limit: 40, orderBy: "rating", withEpisodes: true })
   );
   if (!data || data.results.length === 0) return null;
+
+  const playable = playableOnly(data.results).slice(0, 15);
+  if (playable.length === 0) return null;
 
   const browseUrl = type === "Movie" ? "/browse?type=Movie" : "/browse?type=Drama";
 
@@ -208,7 +229,7 @@ async function RecommendationGrid({ type, title }: { type: "Movie" | "Drama"; ti
     <section className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-12">
       <SectionTitle title={title} href={browseUrl} />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        {data.results.map((s, i) => (
+        {playable.map((s, i) => (
           <Reveal key={s.slug} delay={(i % 5) * 50}>
             <SeriesCard data={toSeriesCard(s)} />
           </Reveal>

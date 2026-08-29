@@ -11,6 +11,7 @@ export type Episode = {
   date: string | null;
   url: string;
   embeds?: string[];
+  servers?: VideoServer[];
   stale?: boolean;
 };
 
@@ -149,6 +150,12 @@ function mapEpisode(row: EpisodeRow): Episode {
     date: row.release_date,
     url: row.source_url,
     embeds: row.embeds ?? [],
+    servers: (row.servers ?? []).map((s) => ({
+      name: s.name ?? "Server",
+      embed: s.embed ?? "",
+      stream: s.stream ?? null,
+      working: s.working ?? null,
+    })),
     stale: row.stale ?? false,
   };
 }
@@ -206,13 +213,15 @@ export async function getSeries(opts: {
   genre?: string;
   /** "newest" (default) = terbaru ditambahkan; "rating" = rating tertinggi */
   orderBy?: "newest" | "rating";
+  /** sertakan episodes (untuk filter "sudah punya video" di homepage) */
+  withEpisodes?: boolean;
 }): Promise<SeriesListResponse> {
   const { sbGet } = await import("./supabase");
   const page = Math.max(1, opts.page ?? 1);
   const limit = Math.min(60, Math.max(1, opts.limit ?? 20));
 
   const params: Record<string, string | number> = {
-    select: "*",
+    select: opts.withEpisodes ? "*,episodes(number,servers,embeds)" : "*",
     limit,
     offset: (page - 1) * limit,
   };
@@ -225,7 +234,9 @@ export async function getSeries(opts: {
   }
   if (opts.genre) params.genres = `cs.["${opts.genre}"]`;
 
-  const { data, total } = await sbGetWithOrderFallback<SeriesRow[]>(
+  const { data, total } = await sbGetWithOrderFallback<
+    (SeriesRow & { episodes: EpisodeRow[] | null })[]
+  >(
     params,
     true,
     opts.orderBy === "rating" ? "rating.desc.nullslast" : undefined
@@ -236,7 +247,12 @@ export async function getSeries(opts: {
     limit,
     total: totalCount,
     total_pages: Math.max(1, Math.ceil(totalCount / limit)),
-    results: data.map(mapSeries),
+    results: data.map((row) => ({
+      ...mapSeries(row),
+      episodes: opts.withEpisodes
+        ? (row.episodes ?? []).map(mapEpisode)
+        : undefined,
+    })),
   };
 }
 
