@@ -542,19 +542,23 @@ export type HealthInfo = {
 
 export async function getHealth(): Promise<HealthInfo> {
   const { sbGet } = await import("./supabase");
+  // Health = statistik live → tanpa cache (revalidate 0)
   const series = await sbGet<{ id: number }[]>("/series", {
     params: { select: "id" },
     count: true,
+    revalidate: 0,
   });
   const episodes = await sbGet<{ id: number }[]>("/episodes", {
     params: { select: "id" },
     count: true,
+    revalidate: 0,
   });
   let withEmbeds = 0;
   try {
     const res = await sbGet<{ id: number }[]>("/episodes", {
       params: { select: "id", servers: "neq.[]" },
       count: true,
+      revalidate: 0,
     });
     withEmbeds = res.total ?? 0;
   } catch {

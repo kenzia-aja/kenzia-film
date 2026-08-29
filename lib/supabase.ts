@@ -45,7 +45,8 @@ export async function sbGet<T>(
   }
   const res = await fetch(`${REST}${path}?${search.toString()}`, {
     headers: headersFor(count),
-    next: { revalidate },
+    // revalidate 0 = tanpa cache (selalu fresh, untuk statistik/health)
+    ...(revalidate > 0 ? { next: { revalidate } } : { cache: "no-store" }),
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
