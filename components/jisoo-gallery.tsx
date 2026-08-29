@@ -55,17 +55,9 @@ export default function JisooGallery({ photos = [] }: Props) {
         ))}
       </div>
 
-      {/* Overlay sinematik: gelap kiri untuk konten + gradasi atas & bawah menyatu ke page */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
+      {/* Overlay sinematik: gelap kiri untuk konten + gradasi atas */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-transparent" />
       <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/60 to-transparent" />
-      {/* Vignette tepi agar fokus ke tengah foto */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(11, 8, 18, 0.55) 100%)",
-        }}
-      />
       {/* Ambient glow violet khas palet baru */}
       <div className="ambient-glow absolute -left-24 bottom-0 h-96 w-96 rounded-full blur-3xl" />
 

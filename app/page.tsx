@@ -39,8 +39,8 @@ async function Hero() {
   return (
     <section className="relative h-[86vh] min-h-[580px] w-full overflow-hidden">
       <JisooGallery photos={photos} />
-      <div className="absolute inset-0 bg-gradient-to-r from-page via-page/55 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-page to-transparent" />
+      {/* Fade bawah menyatu ke konten (overlay kiri ditangani gallery) */}
+      <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-page via-page/70 to-transparent" />
 
       {/* Partikel/sparkle dekoratif di sekitar hero */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
@@ -166,14 +166,23 @@ function SectionTitle({
   );
 }
 
+/** Coba 2x sebelum menyerah (query paralel kadang gagal sesaat) */
+async function tryTwice<T>(fn: () => Promise<T>): Promise<T | null> {
+  try {
+    return await fn();
+  } catch {
+    try {
+      await new Promise((r) => setTimeout(r, 500));
+      return await fn();
+    } catch {
+      return null;
+    }
+  }
+}
+
 /** Baris "Update Terbaru" (horizontal scroll + motion) */
 async function UpdateRow({ type, title }: { type: "Drama" | "Movie"; title: string }) {
-  let data: Awaited<ReturnType<typeof getSeries>> | null = null;
-  try {
-    data = await getSeries({ type, limit: 16 });
-  } catch {
-    return null;
-  }
+  const data = await tryTwice(() => getSeries({ type, limit: 16 }));
   if (!data || data.results.length === 0) return null;
 
   const browseUrl = type === "Movie" ? "/browse?type=Movie" : "/browse?type=Drama";
@@ -186,22 +195,19 @@ async function UpdateRow({ type, title }: { type: "Drama" | "Movie"; title: stri
   );
 }
 
-/** Rekomendasi: film dengan rating tertinggi, grid hingga 8 kolom */
+/** Rekomendasi: film dengan rating tertinggi — 5 kolom × 8 baris */
 async function RecommendationGrid() {
-  let data: Awaited<ReturnType<typeof getSeries>> | null = null;
-  try {
-    data = await getSeries({ type: "Movie", limit: 16, orderBy: "rating" });
-  } catch {
-    return null;
-  }
+  const data = await tryTwice(() =>
+    getSeries({ type: "Movie", limit: 40, orderBy: "rating" })
+  );
   if (!data || data.results.length === 0) return null;
 
   return (
     <section className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-12">
       <SectionTitle title="Rekomendasi Film" href="/browse?type=Movie" />
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {data.results.map((s, i) => (
-          <Reveal key={s.slug} delay={(i % 8) * 50}>
+          <Reveal key={s.slug} delay={(i % 5) * 50}>
             <SeriesCard data={toSeriesCard(s)} />
           </Reveal>
         ))}
