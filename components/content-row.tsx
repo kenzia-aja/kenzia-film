@@ -20,7 +20,7 @@ export default function ContentRow({ items }: { items: CardData[] }) {
         type="button"
         aria-label="Geser ke kiri"
         onClick={() => scrollBy(-1)}
-        className="absolute left-0 top-0 z-10 hidden h-full w-10 place-items-center bg-gradient-to-r from-page to-transparent text-white/70 transition hover:text-white lg:grid"
+        className="absolute -left-4 top-0 z-10 hidden h-full w-12 place-items-center bg-gradient-to-r from-page via-page/80 to-transparent text-white/70 transition hover:text-white sm:-left-6 lg:-left-12 lg:grid"
       >
         <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="m15 19-7-7 7-7" />
@@ -30,7 +30,7 @@ export default function ContentRow({ items }: { items: CardData[] }) {
         type="button"
         aria-label="Geser ke kanan"
         onClick={() => scrollBy(1)}
-        className="absolute right-0 top-0 z-10 hidden h-full w-10 place-items-center bg-gradient-to-l from-page to-transparent text-white/70 transition hover:text-white lg:grid"
+        className="absolute -right-4 top-0 z-10 hidden h-full w-12 place-items-center bg-gradient-to-l from-page via-page/80 to-transparent text-white/70 transition hover:text-white sm:-right-6 lg:-right-12 lg:grid"
       >
         <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="m9 5 7 7-7 7" />
