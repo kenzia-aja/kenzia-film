@@ -32,8 +32,6 @@ export default function SeriesCard({ data }: { data: CardData }) {
             }`}
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-80" />
-
         {data.type && (
           <span className="absolute left-2 top-2 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-200 backdrop-blur">
             {data.type}
