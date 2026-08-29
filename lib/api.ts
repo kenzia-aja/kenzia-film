@@ -177,13 +177,15 @@ function orderNewest(): string {
 
 async function sbGetWithOrderFallback<T>(
   params: Record<string, string | number>,
-  count = false
+  count = false,
+  orderOverride?: string
 ): Promise<{ data: T; total: number | null }> {
   const { sbGet } = await import("./supabase");
+  const order = orderOverride ?? orderNewest();
   try {
-    return await sbGet<T>("/series", { params: { ...params, order: orderNewest() }, count });
+    return await sbGet<T>("/series", { params: { ...params, order }, count });
   } catch (e) {
-    if (firstSeenAvailable && e instanceof Error && /first_seen_at/i.test(e.message)) {
+    if (firstSeenAvailable && !orderOverride && e instanceof Error && /first_seen_at/i.test(e.message)) {
       firstSeenAvailable = false;
       return sbGet<T>("/series", {
         params: { ...params, order: "last_scraped_at.desc.nullslast" },
@@ -202,6 +204,8 @@ export async function getSeries(opts: {
   status?: string;
   country?: string;
   genre?: string;
+  /** "newest" (default) = terbaru ditambahkan; "rating" = rating tertinggi */
+  orderBy?: "newest" | "rating";
 }): Promise<SeriesListResponse> {
   const { sbGet } = await import("./supabase");
   const page = Math.max(1, opts.page ?? 1);
@@ -221,7 +225,11 @@ export async function getSeries(opts: {
   }
   if (opts.genre) params.genres = `cs.["${opts.genre}"]`;
 
-  const { data, total } = await sbGetWithOrderFallback<SeriesRow[]>(params, true);
+  const { data, total } = await sbGetWithOrderFallback<SeriesRow[]>(
+    params,
+    true,
+    opts.orderBy === "rating" ? "rating.desc.nullslast" : undefined
+  );
   const totalCount = total ?? data.length;
   return {
     page,

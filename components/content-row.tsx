@@ -1,10 +1,12 @@
 "use client";
 
 import { useRef } from "react";
+import Reveal from "@/components/reveal";
 import SeriesCard from "@/components/series-card";
 import type { CardData } from "@/lib/card-data";
 
-/** Row konten yang bisa digeser horizontal (gaya IDLIX) dengan tombol prev/next */
+/** Row konten yang bisa digeser horizontal (gaya IDLIX) dengan tombol prev/next
+ *  + efek motion: kartu muncul berurutan (stagger) + scroll-snap. */
 export default function ContentRow({ items }: { items: CardData[] }) {
   const track = useRef<HTMLDivElement>(null);
 
@@ -37,11 +39,16 @@ export default function ContentRow({ items }: { items: CardData[] }) {
 
       <div
         ref={track}
-        className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto scroll-smooth px-4 pb-2"
+        className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-12 lg:px-12"
       >
         {items.map((item, i) => (
-          <div key={`${item.href}-${i}`} className="w-[140px] shrink-0 sm:w-[170px] md:w-[190px]">
-            <SeriesCard data={item} />
+          <div
+            key={`${item.href}-${i}`}
+            className="w-[140px] shrink-0 snap-start sm:w-[170px] md:w-[190px]"
+          >
+            <Reveal delay={(i % 8) * 60}>
+              <SeriesCard data={item} />
+            </Reveal>
           </div>
         ))}
       </div>
