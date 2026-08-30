@@ -84,6 +84,17 @@ export function apiUrl(): string {
   return (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
 }
 
+/**
+ * Embed TurboVIP dapat diputar sebagai HLS oleh pemutar internal lewat route
+ * /api/tv (playlist di-rewrite + segmen PNG dibongkar di sisi server).
+ * Embed lain tetap memakai iframe.
+ */
+function turboVipStream(embed: string): string | null {
+  return /emturbovid\.com|turbovidhls\.com/i.test(embed)
+    ? `/api/tv/playlist?embed=${encodeURIComponent(embed)}`
+    : null;
+}
+
 // ── Pemetaan baris Supabase → tipe aplikasi ──
 
 type SeriesRow = {
@@ -364,23 +375,31 @@ export async function getEpisodeServers(slug: string, ep?: number): Promise<Sour
   if (epRow?.servers && epRow.servers.length > 0) {
     servers = epRow.servers
       .filter((s) => !blocked(s))
-      .map((s) => ({
-        name: s.name ?? "Server",
-        embed: s.embed ?? "",
-        stream: s.stream ?? null,
-        working: s.working ?? null,
-        ads: s.ads ?? (s.stream == null),
-      }));
+      .map((s) => {
+        const stream = s.stream ?? turboVipStream(s.embed ?? "");
+        return {
+          name: s.name ?? "Server",
+          embed: s.embed ?? "",
+          stream,
+          working: s.working ?? null,
+          // stream HLS kita putar sendiri (tanpa iframe pihak ketiga) → tanpa iklan,
+          // meski cache lama dari scraper menandai ads: true
+          ads: stream ? false : (s.ads ?? true),
+        };
+      });
   } else if (epRow?.embeds && epRow.embeds.length > 0) {
     servers = epRow.embeds
       .filter((e) => !/minochinos|filelions/i.test(e))
-      .map((embed, i) => ({
-        name: `Server ${i + 1}`,
-        embed,
-        stream: null,
-        working: true,
-        ads: true,
-      }));
+      .map((embed, i) => {
+        const stream = turboVipStream(embed);
+        return {
+          name: `Server ${i + 1}`,
+          embed,
+          stream,
+          working: true,
+          ads: !stream,
+        };
+      });
   }
 
   servers.sort((a, b) => {
@@ -491,7 +510,7 @@ function parseServerOptions(html: string, pageUrl: string): VideoServer[] {
     const embed = new URL(srcMatch[1], pageUrl).toString();
     if (seen.has(embed) || isBlocked(embed, name)) continue;
     seen.add(embed);
-    servers.push({ name, embed, stream: null, working: true, ads: true });
+    servers.push({ name, embed, stream: turboVipStream(embed), working: true, ads: !turboVipStream(embed) });
   }
 
   // fallback: iframe biasa
@@ -502,7 +521,7 @@ function parseServerOptions(html: string, pageUrl: string): VideoServer[] {
       const embed = src.startsWith("//") ? `https:${src}` : new URL(src, pageUrl).toString();
       if (seen.has(embed) || isBlocked(embed, "")) continue;
       seen.add(embed);
-      servers.push({ name: "Default", embed, stream: null, working: true, ads: true });
+      servers.push({ name: "Default", embed, stream: turboVipStream(embed), working: true, ads: !turboVipStream(embed) });
     }
   }
 

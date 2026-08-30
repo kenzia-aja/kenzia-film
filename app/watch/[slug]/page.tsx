@@ -111,6 +111,7 @@ export default async function WatchPage({
             key={`${slug}-${currentEpNum ?? "movie"}`}
             slug={slug}
             ep={currentEpNum ?? 1}
+            title={`${series.title}${currentEpNum != null ? ` — Episode ${currentEpNum}` : ""}`}
             initialServers={servers}
             initialError={sourcesError}
           />
@@ -121,9 +122,9 @@ export default async function WatchPage({
         )}
       </div>
 
-      {servers && servers.filter((s) => s.stream).length > 1 && (
+      {servers && servers.some((s) => s.stream) && (
         <p className="mt-2 text-xs text-zinc-500">
-          Kualitas 1080p/720p/480p tersedia lewat tombol pengaturan di player.
+          Pilih resolusi lewat tombol roda gigi di pemutar.
         </p>
       )}
 

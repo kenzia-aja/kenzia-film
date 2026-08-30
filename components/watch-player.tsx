@@ -7,11 +7,12 @@ import { apiUrl, type VideoServer } from "@/lib/api";
 type Props = {
   slug: string;
   ep: number;
+  title?: string;
   initialServers?: VideoServer[];
   initialError?: string | null;
 };
 
-export default function WatchPlayer({ slug, ep, initialServers, initialError }: Props) {
+export default function WatchPlayer({ slug, ep, title, initialServers, initialError }: Props) {
   const [servers, setServers] = useState<VideoServer[] | null>(initialServers ?? null);
   const [error, setError] = useState<string | null>(initialError ?? null);
   const [loading, setLoading] = useState(!initialServers && !initialError);
@@ -47,9 +48,7 @@ export default function WatchPlayer({ slug, ep, initialServers, initialError }: 
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       if (msg.includes("Failed to fetch") || msg.includes("ECONNREFUSED") || msg.includes("NetworkError")) {
-        setError(
-          "Tidak bisa terhubung ke API (http://127.0.0.1:8000). Pastikan terminal API sedang berjalan: python main.py"
-        );
+        setError("Tidak bisa terhubung ke server. Periksa koneksi lalu coba lagi.");
       } else {
         setError(msg);
       }
@@ -114,8 +113,7 @@ export default function WatchPlayer({ slug, ep, initialServers, initialError }: 
             </a>
           </div>
           <p className="mt-4 text-[11px] text-zinc-600">
-            Tips: pastikan API berjalan di terminal 1 (<code className="text-zinc-400">python main.py</code>) dan web di
-            terminal 2 (<code className="text-zinc-400">npm run dev</code>).
+            Sumber video diambil langsung dari database (Supabase) oleh server web.
           </p>
         </div>
       </div>
@@ -140,5 +138,5 @@ export default function WatchPlayer({ slug, ep, initialServers, initialError }: 
     );
   }
 
-  return <VideoPlayer servers={servers} />;
+  return <VideoPlayer servers={servers} title={title} />;
 }

@@ -33,7 +33,7 @@ export default async function JadwalPage() {
 
       {days.length === 0 ? (
         <p className="rounded-xl border border-dashed border-white/10 p-10 text-center text-sm text-zinc-500">
-          Tidak bisa memuat jadwal. Pastikan API berjalan di port 8000.
+          Jadwal belum tersedia. Jalankan sinkronisasi scraper untuk mengisi data.
         </p>
       ) : (
         <ScheduleTabs days={days} />
