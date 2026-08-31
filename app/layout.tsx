@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, Plus_Jakarta_Sans } from "next/font/google";
 import Link from "next/link";
-import "./globals.css";
+import { Suspense } from "react";
 import Navbar from "@/components/navbar";
 import { SITE_URL } from "@/lib/site";
 
@@ -34,7 +34,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${jakarta.variable} ${bebas.variable} h-full antialiased`}
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col">
-        <Navbar />
+        <Suspense fallback={<div className="h-16" />}>
+          <Navbar />
+        </Suspense>
         <main className="flex-1 pb-16 lg:pb-0">{children}</main>
         <footer className="relative mt-20 overflow-hidden border-t border-white/10">
           <div className="relative mx-auto max-w-[1400px] px-4 py-12 pb-24 lg:px-12 lg:py-12">
