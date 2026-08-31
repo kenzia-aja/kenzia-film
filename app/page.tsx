@@ -1,115 +1,34 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { readdir } from "node:fs/promises";
-import path from "node:path";
 import { getSeries, getHealth, getGenres } from "@/lib/api";
+import HeroShowcase, { type HeroTitle } from "@/components/hero-showcase";
 import SeriesCard from "@/components/series-card";
 import { toSeriesCard } from "@/lib/card-data";
 import GridSkeleton from "@/components/grid-skeleton";
 import Reveal from "@/components/reveal";
 import StatsBar from "@/components/stats-bar";
-import JisooGallery from "@/components/jisoo-gallery";
 import ContentRow from "@/components/content-row";
 
-export const dynamic = "force-dynamic";
-
-const HERO_PHOTO_DIR = path.join(process.cwd(), "public", "jisoo");
-
-/** Baca daftar foto hero dari /public/jisoo (jisoo-1.jpg, jisoo-2.jpg, …) di server */
-async function getHeroPhotos(): Promise<string[]> {
-  try {
-    const files = await readdir(HERO_PHOTO_DIR);
-    return files
-      .map((file) => ({ file, num: Number(/^jisoo-(\d+)\./i.exec(file)?.[1] ?? NaN) }))
-      .filter(({ num }) => Number.isInteger(num))
-      .sort((a, b) => a.num - b.num)
-      .map(({ file }) => `/jisoo/${file}`);
-  } catch {
-    /* folder tidak ada / kosong */
-    return [];
-  }
-}
-
 async function Hero() {
-  const photos = await getHeroPhotos();
-
-  const line1 = "Semua Cerita. Semua Drama.";
-  const line2 = "Satu Tempat. Tanpa Ribet.";
+  const data = await tryTwice(() =>
+    getSeries({ limit: 12, withEpisodes: true })
+  );
+  const titles: HeroTitle[] = (data?.results ?? [])
+    .filter((s) => s.poster)
+    .map((s) => ({
+      slug: s.slug,
+      title: s.title ?? s.slug,
+      poster: s.poster ?? null,
+      rating: s.rating ?? null,
+      type: s.type ?? null,
+      genres: s.genres ?? [],
+      synopsis: s.synopsis ?? null,
+    }));
+  if (titles.length === 0) return null;
 
   return (
-    <section className="relative h-[86vh] min-h-[580px] w-full overflow-hidden">
-      <JisooGallery photos={photos} />
-      {/* Fade bawah menyatu ke konten (overlay kiri ditangani gallery) */}
-      <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-page via-page/70 to-transparent" />
-
-      {/* Partikel/sparkle dekoratif di sekitar hero */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <span className="animate-sparkle absolute left-[18%] top-[30%] size-1.5 rounded-full bg-brand-strong" style={{ animationDelay: "0ms" }} />
-        <span className="animate-sparkle absolute left-[32%] top-[22%] size-1 rounded-full bg-white/80" style={{ animationDelay: "1s" }} />
-        <span className="animate-sparkle absolute right-[24%] top-[36%] size-1.5 rounded-full bg-brand-soft" style={{ animationDelay: "1.8s" }} />
-        <span className="animate-sparkle absolute left-[48%] top-[56%] size-1 rounded-full bg-white/60" style={{ animationDelay: "2.4s" }} />
-      </div>
-
-      <div className="absolute inset-0 flex items-center pb-24">
-        {/* Ambient glow biru (lebih kuat & bernapas) */}
-        <div className="ambient-glow pointer-events-none absolute -left-32 bottom-[-120px] h-[520px] w-[520px] rounded-full blur-3xl" />
-        <div className="ambient-glow pointer-events-none absolute right-[8%] top-[10%] h-[280px] w-[280px] rounded-full blur-3xl" style={{ animationDelay: "2s" }} />
-
-        <div className="relative mx-auto w-full max-w-[1400px] px-4 pb-8">
-          <p
-            className="animate-float-in mb-5 inline-flex items-center gap-2 rounded-full border border-brand/40 bg-brand/10 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.3em] text-brand-soft backdrop-blur sm:text-xs"
-            style={{ animationDelay: "0ms" }}
-          >
-            <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-brand-strong" />
-            Streaming • Subtitle Indonesia
-          </p>
-
-          <h1 className="font-display text-6xl uppercase leading-[0.92] tracking-wide sm:text-7xl lg:text-8xl">
-            <span className="block" aria-label={line1}>
-              {line1}
-            </span>
-            <span className="block text-brand" aria-label={line2}>
-              {line2}
-            </span>
-          </h1>
-
-          <p
-            className="animate-float-in mt-5 max-w-xl text-sm text-zinc-300 sm:text-base"
-            style={{ animationDelay: "1050ms" }}
-          >
-            Drama Korea, China, Jepang, sampai film barat — selalu update, subtitle
-            Indonesia, langsung tonton kualitas maksimal. Klik, nikmati, tanpa henti.
-          </p>
-
-          <div className="animate-float-in mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: "1200ms" }}>
-            <Link
-              href="/browse"
-              className="btn-shine rounded-md bg-brand px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-brand/30 ring-1 ring-brand-strong/50 transition duration-300 hover:scale-[1.03] hover:bg-brand-strong hover:shadow-brand/50"
-            >
-              Mulai Nonton
-            </Link>
-            <Link
-              href="/jadwal"
-              className="rounded-md bg-white/10 px-7 py-3 text-sm font-semibold text-white ring-1 ring-white/20 backdrop-blur transition duration-300 hover:scale-[1.03] hover:bg-white/20 hover:ring-white/40"
-            >
-              Jadwal Rilis
-            </Link>
-
-            <span className="animate-float-y hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-zinc-300 backdrop-blur md:flex" style={{ animationDelay: "1.3s" }}>
-              <svg className="h-4 w-4 text-brand" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2l2.4 2.4 3.3-.4.6 3.3 3 1.5-1.5 3 1.5 3-3 1.5-.6 3.3-3.3-.4L12 22l-2.4-2.4-3.3.4-.6-3.3-3-1.5 1.5-3-1.5-3 3-1.5.6-3.3 3.3.4L12 2zm0 5a5 5 0 1 0 0 10 5 5 0 0 0 0-10z" />
-              </svg>
-              <span className="text-white">4K</span> Ultra HD
-            </span>
-            <span className="animate-float-y hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-zinc-300 backdrop-blur md:flex" style={{ animationDelay: "2s" }}>
-              <svg className="h-4 w-4 text-emerald-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 19V6l6 1v13M13 6H5v13h8M5 19h13" />
-              </svg>
-              Tanpa iklan
-            </span>
-          </div>
-        </div>
-      </div>
+    <section className="relative h-[72vh] min-h-[560px] w-full overflow-hidden">
+      <HeroShowcase titles={titles.slice(0, 4)} />
     </section>
   );
 }
@@ -170,6 +89,27 @@ function SectionTitle({
     </div>
   );
 }
+/** Kartu error inline saat upstream gagal: bergaya empty-state dashed sistem, dengan taut recovery */
+function SectionError({ title, href }: { title: string; href?: string }) {
+  return (
+    <section className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-12">
+      <h2 className="mb-4 text-lg font-bold tracking-tight text-white sm:text-xl">
+        <span className="inline-block border-b-2 border-primary pb-1">{title}</span>
+      </h2>
+      <div className="rounded-xl border border-dashed border-white/10 p-10 text-center">
+        <p className="text-sm text-text-muted">Gagal memuat {title.toLowerCase()} — koneksi ke katalog terputus.</p>
+        <div className="mt-4 flex items-center justify-center gap-3">
+          <a href="." className="rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-soft focus-visible:ring-offset-2 focus-visible:ring-offset-page">Coba muat ulang</a>
+          {href && (
+            <Link href={href} className="text-sm font-semibold text-brand-soft transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-soft focus-visible:ring-offset-2 focus-visible:ring-offset-page">
+              Buka {href.startsWith("/browse?type=Movie") ? "katalog film" : "katalog series"} →
+            </Link>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 /** Coba 2x sebelum menyerah (query paralel kadang gagal sesaat) */
 async function tryTwice<T>(fn: () => Promise<T>): Promise<T | null> {
@@ -194,17 +134,34 @@ function playableOnly(results: Awaited<ReturnType<typeof getSeries>>["results"])
   );
 }
 
+/** Skeleton satu baris horizontal: judul section + kartu 2/3 */
+function SectionRowSkeleton() {
+  return (
+    <section className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-12">
+      <div className="mb-4 skeleton h-5 w-44 rounded" />
+      <div className="flex gap-3 overflow-hidden">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="w-[calc(50%-0.375rem)] shrink-0 sm:w-[calc(33.333%-0.5rem)] md:w-[calc(25%-0.5625rem)] lg:w-[calc(20%-0.6rem)]">
+            <div className="skeleton aspect-[2/3] w-full rounded-lg" />
+            <div className="skeleton mt-2 h-3.5 w-4/5 rounded" />
+            <div className="skeleton mt-1.5 h-3 w-1/2 rounded" />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 /** Baris "Update Terbaru" (horizontal scroll + motion) */
 async function UpdateRow({ type, title }: { type: "Drama" | "Movie"; title: string }) {
+  const browseUrl = type === "Movie" ? "/browse?type=Movie" : "/browse?type=Drama";
   const data = await tryTwice(() =>
     getSeries({ type, limit: 24, withEpisodes: true })
   );
-  if (!data || data.results.length === 0) return null;
+  if (!data) return <SectionError title={title} href={browseUrl} />;
+  if (data.results.length === 0) return null;
 
   const playable = playableOnly(data.results).slice(0, 16);
   if (playable.length === 0) return null;
-
-  const browseUrl = type === "Movie" ? "/browse?type=Movie" : "/browse?type=Drama";
 
   return (
     <section className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-12">
@@ -216,15 +173,15 @@ async function UpdateRow({ type, title }: { type: "Drama" | "Movie"; title: stri
 
 /** Rekomendasi (rating tertinggi): 3 baris × 5 kolom = 15 judul */
 async function RecommendationGrid({ type, title }: { type: "Movie" | "Drama"; title: string }) {
+  const browseUrl = type === "Movie" ? "/browse?type=Movie" : "/browse?type=Drama";
   const data = await tryTwice(() =>
     getSeries({ type, limit: 40, orderBy: "rating", withEpisodes: true })
   );
-  if (!data || data.results.length === 0) return null;
+  if (!data) return <SectionError title={title} href={browseUrl} />;
+  if (data.results.length === 0) return null;
 
   const playable = playableOnly(data.results).slice(0, 15);
   if (playable.length === 0) return null;
-
-  const browseUrl = type === "Movie" ? "/browse?type=Movie" : "/browse?type=Drama";
 
   return (
     <section className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-12">
@@ -254,7 +211,7 @@ async function SeeAllButton() {
     <div className="text-center">
       <Link
         href="/browse"
-        className="btn-shine inline-flex items-center gap-2 rounded-md bg-brand px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand/30 ring-1 ring-brand-strong/50 transition duration-300 hover:scale-[1.03] hover:bg-brand-strong hover:shadow-brand/50"
+        className="inline-flex items-center gap-2 rounded-md bg-brand px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand/30 ring-1 ring-brand-strong/50 transition duration-300 hover:bg-brand-strong hover:shadow-brand/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-soft focus-visible:ring-offset-2 focus-visible:ring-offset-page"
       >
         Lihat Semua{total ? ` ${total.toLocaleString("id-ID")}` : ""} Judul →
       </Link>
@@ -278,11 +235,11 @@ export default function HomePage() {
 
       {/* Update terbaru: series dulu, lalu film */}
       <div className="mt-14 space-y-12 sm:mt-16">
-        <Suspense fallback={null}>
+        <Suspense fallback={<SectionRowSkeleton />}>
           <UpdateRow type="Drama" title="Update Series" />
         </Suspense>
 
-        <Suspense fallback={null}>
+        <Suspense fallback={<SectionRowSkeleton />}>
           <UpdateRow type="Movie" title="Update Film" />
         </Suspense>
 

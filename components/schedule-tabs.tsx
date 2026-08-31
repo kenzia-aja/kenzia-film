@@ -58,23 +58,14 @@ export default function ScheduleTabs({ days }: { days: ScheduleDay[] }) {
           return (
             <button
               key={d.day}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
               onClick={() => setActiveDay(d.day)}
-              className={`flex shrink-0 items-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold transition ${
-                isActive
-                  ? "bg-brand text-white"
-                  : "bg-white/5 text-zinc-400 ring-1 ring-white/10 hover:bg-white/10 hover:text-white"
-              }`}
+              className={`flex shrink-0 items-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-soft ${isActive ? "bg-brand text-white" : "bg-white/5 text-zinc-400 ring-1 ring-white/10 hover:bg-white/10 hover:text-white"}`}
             >
               {normalize(d.day)}
-              {isToday && (
-                <span
-                    className={`rounded px-1.5 py-0.5 text-[9px] font-bold tracking-wide ${
-                      isActive ? "bg-black/30 text-white" : "bg-brand/15 text-brand"
-                    }`}
-                  >
-                  HARI INI
-                </span>
-              )}
+              {isToday && <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold tracking-wide ${isActive ? "bg-black/30 text-white" : "bg-brand/15 text-brand"}`}>HARI INI</span>}
             </button>
           );
         })}

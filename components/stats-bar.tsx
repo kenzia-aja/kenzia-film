@@ -67,7 +67,7 @@ function StatItem({
       <span className="text-2xl font-extrabold tabular-nums text-white transition group-hover:text-brand-strong sm:text-3xl">
         {value.toLocaleString("id-ID")}
       </span>
-      <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+      <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">
         {label}
       </span>
     </div>

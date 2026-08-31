@@ -128,13 +128,11 @@ export default async function WatchPage({
         </p>
       )}
 
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-5">
         <div>
           <h1 className="font-display text-3xl uppercase tracking-wide sm:text-4xl">{series.title}</h1>
           <p className="text-sm text-zinc-500">
-            {currentEpNum == null
-              ? "Film penuh"
-              : `Episode ${currentEpNum}${current?.date ? ` • ${current.date}` : ""}`}
+            {currentEpNum == null ? "Film penuh" : `Episode ${currentEpNum}${current?.date ? ` • ${current.date}` : ""}`}
           </p>
         </div>
         <div className="flex gap-2">
@@ -172,11 +170,8 @@ export default async function WatchPage({
                 <Link
                   key={`${ep.url}-${idx}`}
                   href={`/watch/${slug}?ep=${num ?? 1}`}
-                  className={`grid h-10 place-items-center rounded-md text-sm font-semibold transition ${
-                    isActive
-                      ? "bg-brand text-white"
-                      : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white"
-                  }`}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`grid h-10 place-items-center rounded-md text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-soft ${isActive ? "bg-brand text-white" : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white"}`}
                 >
                   {num ?? "Play"}
                 </Link>

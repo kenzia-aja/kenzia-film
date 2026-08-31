@@ -96,40 +96,6 @@ body {
 
 /* â”€â”€ Motion creative â”€â”€ */
 
-/* Kilau menyapu tombol saat hover */
-@keyframes shine-sweep {
-  from {
-    transform: translateX(-160%) skewX(-18deg);
-  }
-  to {
-    transform: translateX(260%) skewX(-18deg);
-  }
-}
-
-.btn-shine {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-}
-.btn-shine::after {
-  content: "";
-  position: absolute;
-  inset-block: 0;
-  left: 0;
-  width: 45%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.35),
-    transparent
-  );
-  transform: translateX(-160%) skewX(-18deg);
-  z-index: 1;
-}
-.btn-shine:hover::after {
-  animation: shine-sweep 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
 /* Ambient glow biru yang bernapas (blob di belakang hero) */
 @keyframes breathe {
   0%,
@@ -167,19 +133,6 @@ body {
   animation: dot-progress var(--slide-interval, 5s) linear both;
 }
 
-/* Titik "live" berdenyut */
-@keyframes pulse-dot {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.6);
-  }
-  70% {
-    box-shadow: 0 0 0 7px rgba(59, 130, 246, 0);
-  }
-}
-.pulse-dot {
-  animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
 
 /* Dorongan naik berayun (masuk dari bawah, kesan lembut & mengambang) */
 @keyframes float-in {
@@ -276,7 +229,6 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .ambient-glow,
-  .pulse-dot,
   .dot-progress,
   .animate-float-in,
   .animate-float-y,
@@ -286,9 +238,6 @@ body {
   }
   .animate-float-in {
     opacity: 1;
-  }
-  .btn-shine::after {
-    display: none;
   }
   .reveal {
     opacity: 1;

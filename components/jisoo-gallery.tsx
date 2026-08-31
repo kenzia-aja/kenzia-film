@@ -58,9 +58,7 @@ export default function JisooGallery({ photos = [] }: Props) {
       {/* Overlay sinematik: gelap kiri untuk konten + gradasi atas */}
       <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-transparent" />
       <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/60 to-transparent" />
-      {/* Ambient glow violet khas palet baru */}
-      <div className="ambient-glow absolute -left-24 bottom-0 h-96 w-96 rounded-full blur-3xl" />
-
+      {/* Ambient glow biru khas palet (Screen-Light Rule) */}
       {/* Indikator slide + progres */}
       <div className="absolute bottom-4 right-6 z-10 flex items-center gap-2">
         <span className="mr-1 font-display text-sm tracking-[0.25em] text-brand">
@@ -72,19 +70,23 @@ export default function JisooGallery({ photos = [] }: Props) {
             onClick={() => setActive(i)}
             aria-label={`Foto ${i + 1}`}
             aria-current={i === active}
-            className={`relative h-1.5 overflow-hidden rounded-full transition-all duration-500 ${
-              i === active
-                ? "w-7 bg-white/20"
-                : "w-3 bg-white/25 hover:bg-white/50"
-            }`}
+            className="relative grid h-11 w-8 place-items-center"
           >
-            {i === active && (
-              <span
-                key={`bar-${active}`}
-                className="dot-progress absolute inset-0 rounded-full bg-brand"
-                style={{ "--slide-interval": `${SLIDE_INTERVAL}ms` } as React.CSSProperties}
-              />
-            )}
+            <span
+              className={`relative h-1.5 overflow-hidden rounded-full transition-all duration-500 ${
+                i === active
+                  ? "w-7 bg-white/20"
+                  : "w-3 bg-white/25 hover:bg-white/50"
+              }`}
+            >
+              {i === active && (
+                <span
+                  key={`bar-${active}`}
+                  className="dot-progress absolute inset-0 rounded-full bg-brand"
+                  style={{ "--slide-interval": `${SLIDE_INTERVAL}ms` } as React.CSSProperties}
+                />
+              )}
+            </span>
           </button>
         ))}
       </div>

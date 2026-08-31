@@ -16,7 +16,7 @@ export default function SeriesCard({ data }: { data: CardData }) {
       // agar konsisten untuk screen reader dan lolos audit label-content-name-mismatch
       aria-label={[data.type, data.badge, data.title, data.sub].filter(Boolean).join(", ")}
     >
-      <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-surface ring-1 ring-white/10 transition-all duration-300 group-hover:scale-[1.04] group-hover:shadow-2xl group-hover:shadow-black/70 group-hover:ring-brand/60">
+      <div className="relative aspect-[2/3] overflow-hidden rounded-lg bg-surface ring-1 ring-white/10 transition-colors duration-200 group-hover:ring-brand/60 group-focus-visible:ring-brand/60">
         {!loaded && <div className="skeleton absolute inset-0" />}
         {data.poster && (
           <Image
@@ -43,8 +43,8 @@ export default function SeriesCard({ data }: { data: CardData }) {
           </span>
         )}
 
-        <span className="absolute inset-0 grid place-items-center opacity-0 transition duration-300 group-hover:opacity-100">
-          <span className="grid h-12 w-12 scale-75 place-items-center rounded-full bg-brand shadow-lg shadow-brand/50 ring-2 ring-white/70 transition-transform duration-300 group-hover:scale-100">
+        <span className="absolute inset-0 grid place-items-center bg-black/10 opacity-0 transition-opacity duration-200 group-hover:bg-black/25 group-hover:opacity-100 group-focus-visible:bg-black/25 group-focus-visible:opacity-100">
+          <span className="grid h-11 w-11 place-items-center rounded-full bg-brand shadow-lg shadow-black/40 ring-1 ring-white/70">
             <svg className="ml-0.5 h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5.14v13.72L19 12 8 5.14Z" />
             </svg>
@@ -52,10 +52,10 @@ export default function SeriesCard({ data }: { data: CardData }) {
         </span>
       </div>
 
-      <h3 className="mt-2 line-clamp-2 text-sm font-medium leading-snug text-zinc-200 transition group-hover:text-white">
+      <h3 className="mt-2 line-clamp-2 text-sm font-medium leading-snug text-zinc-200 transition group-hover:text-white group-focus-visible:text-white">
         {data.title}
       </h3>
-      {data.sub && <p className="mt-0.5 truncate text-xs text-zinc-500">{data.sub}</p>}
+      {data.sub && <p className="mt-0.5 truncate text-xs text-text-muted">{data.sub}</p>}
     </Link>
   );
 }

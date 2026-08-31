@@ -84,9 +84,13 @@ async function Results({ searchParams }: { searchParams: Record<string, string> 
 
   if (data.results.length === 0) {
     return (
-      <p className="rounded-xl border border-dashed border-white/10 p-16 text-center text-sm text-zinc-500">
-        Tidak ada judul yang cocok dengan filter ini.
-      </p>
+      <div className="rounded-xl border border-dashed border-white/10 p-16 text-center">
+        <p className="text-sm text-zinc-300">Tidak ada judul yang cocok.</p>
+        <p className="mt-2 text-sm text-zinc-500">Coba ubah kata kunci atau hapus beberapa filter.</p>
+        <Link href="/browse" className="mt-5 inline-flex rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-strong">
+          Reset filter
+        </Link>
+      </div>
     );
   }
 
@@ -170,31 +174,33 @@ export default async function BrowsePage({
         Katalog
       </p>
       <h1 className="font-display text-5xl uppercase tracking-wide">Jelajahi</h1>
-      <p className="mb-8 mt-2 text-sm text-zinc-500">
-        Filter berdasarkan tipe, status tayang, atau genre favoritmu.
-      </p>
-
-      <div className="mb-8 space-y-3 rounded-xl border border-white/5 bg-surface/60 p-4">
-        <FilterRow
-          label="Tipe"
-          options={TYPES}
-          active={current.type}
-          current={current}
-          paramKey="type"
-        />
-        <FilterRow
-          label="Status"
-          options={STATUSES}
-          active={current.status}
-          current={current}
-          paramKey="status"
-        />
-        <Suspense fallback={null}>
-          <CountryRow current={current} />
-        </Suspense>
-        <Suspense fallback={null}>
-          <GenreRow current={current} />
-        </Suspense>
+      <div className="mb-8 rounded-lg border border-white/10 bg-surface/50 p-4">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">Filter katalog</span>
+          {Object.keys(current).some((key) => key !== "page") && (
+            <Link href="/browse" className="text-xs font-semibold text-brand-soft transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-soft">
+              Reset semua
+            </Link>
+          )}
+        </div>
+        <div className="space-y-3">
+          <FilterRow
+            label="Tipe"
+            options={TYPES}
+            active={current.type}
+            current={current}
+            paramKey="type"
+          />
+          <FilterRow
+            label="Status"
+            options={STATUSES}
+            active={current.status}
+            current={current}
+            paramKey="status"
+          />
+          <Suspense fallback={null}><CountryRow current={current} /></Suspense>
+          <Suspense fallback={null}><GenreRow current={current} /></Suspense>
+        </div>
       </div>
 
       <Suspense

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type MenuItem = { label: string; href: string };
@@ -19,10 +19,10 @@ const DRAMA_SUB: MenuItem[] = [
 const FILM_SUB: MenuItem[] = [
   { label: "Film Korea", href: "/browse?type=Movie&country=South+Korea" },
   { label: "Film China", href: "/browse?type=Movie&country=China" },
-  { label: "Film Hong Kong", href: "/browse?type=Movie&country=Hong+Kong" },
+  { label: "Film Taiwan", href: "/browse?type=Movie&country=Taiwan" },
   { label: "Film Jepang", href: "/browse?type=Movie&country=Japan" },
   { label: "Film Thailand", href: "/browse?type=Movie&country=Thailand" },
-  { label: "Film Taiwan", href: "/browse?type=Movie&country=Taiwan" },
+  { label: "Film Taiwan", href: "/browse?type=Movie&Taiwan" },
   { label: "Film India", href: "/browse?type=Movie&country=India" },
   { label: "Film Barat", href: "/browse?type=Movie&country=Barat" },
 ];
@@ -55,7 +55,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   return (
     <Link
       href={href}
-      className={`group relative flex h-16 items-center px-3.5 text-sm transition-all duration-200 ${
+      className={`group relative flex h-16 items-center px-3.5 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-soft ${
         active
           ? "font-semibold text-white"
           : "text-zinc-300 hover:text-white"
@@ -71,19 +71,34 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   );
 }
 
-function Dropdown({ label, items }: { label: string; items: MenuItem[] }) {
+function Dropdown({ label, items, open, onToggle }: { label: string; items: MenuItem[]; open: boolean; onToggle: () => void }) {
   return (
     <div className="group relative">
-      <button className="flex h-16 items-center gap-1.5 px-3 text-sm text-zinc-300 transition hover:text-white">
+      <button
+        onClick={onToggle}
+        onKeyDown={(e) => e.key === "Escape" && onToggle()}
+        aria-expanded={open}
+        aria-haspopup="true"
+        className={`flex h-16 items-center gap-1.5 px-3 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-soft ${
+          open ? "text-white" : "text-zinc-300 hover:text-white"
+        }`}
+      >
         {label}
-        <Chevron />
+        <Chevron open={open} />
       </button>
-      <div className="invisible absolute left-0 top-full z-50 min-w-44 pt-1 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
+      <div
+        className={`absolute left-0 top-full z-50 min-w-44 pt-1 transition-all duration-200 ${
+          open ? "visible opacity-100" : "invisible opacity-0 group-hover:visible group-hover:opacity-100"
+        }`}
+      >
         <div className="overflow-hidden rounded-lg border border-white/10 bg-surface py-1.5 shadow-2xl shadow-black/70 ring-1 ring-brand/20">
           {items.map((item) => (
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => {
+                if (open) onToggle();
+              }}
               className="block border-l-2 border-transparent px-4 py-2 text-sm text-zinc-400 transition hover:border-brand hover:bg-brand/10 hover:text-white"
             >
               {item.label}
@@ -101,7 +116,9 @@ export default function Navbar() {
   const [q, setQ] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSub, setMobileSub] = useState<string | null>(null);
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
+  const search = useSearchParams().toString();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -110,6 +127,13 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const isActive = (href: string) => {
+    const [path, query] = href.split("?");
+    if (pathname !== path) return false;
+    if (!query) return true;
+    const want = new URLSearchParams(query);
+    return [...want.entries()].every(([k, v]) => search.includes(`${k}=${v}`));
+  };
   function submit(e: React.FormEvent) {
     e.preventDefault();
     const query = q.trim();
@@ -137,14 +161,14 @@ export default function Navbar() {
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-page/95 backdrop-blur-xl"
+          ? "bg-page/80 backdrop-blur-xl"
           : "bg-gradient-to-b from-black/80 via-black/40 to-transparent"
       }`}
     >
       <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-4 px-4">
         <Link href="/" className="flex shrink-0 items-center" aria-label="Kenzia">
-          <span className="font-display text-2xl font-black leading-none tracking-[0.05em] text-brand">
-            KENZIA
+          <span className="font-display text-2xl font-black leading-none tracking-[0.05em] text-white">
+            KEN<span className="text-brand">ZIA</span>
           </span>
         </Link>
 
@@ -152,7 +176,7 @@ export default function Navbar() {
           <NavLink href="/">Beranda</NavLink>
           <Link
             href="/browse?status=Ongoing"
-            className="group flex h-16 items-center px-3.5 text-sm text-zinc-300 transition-all duration-200 hover:scale-105 hover:text-white"
+            className="group relative flex h-16 items-center px-3.5 text-sm text-zinc-300 transition-all duration-200 hover:scale-105 hover:text-white"
           >
             Ongoing
             <span className="absolute inset-x-3.5 bottom-0 h-0.5 origin-left scale-x-0 rounded-full bg-gradient-to-r from-brand to-brand-strong transition-transform duration-300 group-hover:scale-x-100" />
@@ -164,8 +188,8 @@ export default function Navbar() {
             Completed
             <span className="absolute inset-x-3.5 bottom-0 h-0.5 origin-left scale-x-0 rounded-full bg-gradient-to-r from-brand to-brand-strong transition-transform duration-300 group-hover:scale-x-100" />
           </Link>
-          <Dropdown label="Drama" items={DRAMA_SUB} />
-          <Dropdown label="Film" items={FILM_SUB} />
+          <Dropdown label="Drama" items={DRAMA_SUB} open={openMenu === "Drama"} onToggle={() => setOpenMenu(openMenu === "Drama" ? null : "Drama")} />
+          <Dropdown label="Film" items={FILM_SUB} open={openMenu === "Film"} onToggle={() => setOpenMenu(openMenu === "Film" ? null : "Film")} />
           <Link
             href="/browse?genre=Animation"
             className="group relative flex h-16 items-center px-3.5 text-sm text-zinc-300 transition-all duration-200 hover:scale-105 hover:text-white"
@@ -179,7 +203,7 @@ export default function Navbar() {
         <form onSubmit={submit} className="group ml-auto w-full max-w-[220px] transition-all duration-300 focus-within:max-w-[300px] lg:max-w-[240px] lg:focus-within:max-w-[320px]">
           <label className="relative block">
             <svg
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500 transition group-focus-within:text-brand"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 transition group-focus-within:text-brand"
               fill="none"
               stroke="currentColor"
               strokeWidth={2}
@@ -195,14 +219,14 @@ export default function Navbar() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Cari judul…"
-              className="w-full rounded-full border border-white/10 bg-white/5 py-2 pl-9 pr-9 text-sm placeholder-zinc-500 outline-none transition-all duration-300 focus:border-brand focus:bg-white/10 focus:shadow-[0_0_0_3px_rgba(37,99,235,0.25)]"
+              className="w-full rounded-full border border-white/10 bg-white/5 py-2 pl-9 pr-9 text-sm placeholder-zinc-400 outline-none transition-all duration-300 focus:border-brand focus:bg-white/10 focus:shadow-[0_0_0_3px_rgba(37,99,235,0.25)]"
             />
             {q && (
               <button
                 type="button"
                 onClick={() => setQ("")}
                 aria-label="Hapus pencarian"
-                className="absolute right-2 top-1/2 grid h-5 w-5 -translate-y-1/2 place-items-center rounded-full text-zinc-500 transition hover:bg-white/10 hover:text-white"
+                className="absolute right-2 top-1/2 grid h-5 w-5 -translate-y-1/2 place-items-center rounded-full text-zinc-400 transition hover:bg-white/10 hover:text-white"
               >
                 <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                   <path strokeLinecap="round" d="M6 6l12 12M6 18L18 6" />
@@ -214,8 +238,10 @@ export default function Navbar() {
 
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-md text-zinc-300 hover:bg-white/5 lg:hidden"
-          aria-label="Menu"
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-menu"
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-md text-zinc-300 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-soft lg:hidden"
+          aria-label={mobileOpen ? "Tutup menu" : "Buka menu"}
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             {mobileOpen ? (
@@ -228,7 +254,7 @@ export default function Navbar() {
       </div>
 
       {mobileOpen && (
-        <nav className="border-t border-white/5 bg-page/95 px-4 py-3 backdrop-blur-xl lg:hidden">
+        <nav id="mobile-menu" className="border-t border-white/5 bg-page/80 px-4 py-3 backdrop-blur-xl lg:hidden">
           <div className="flex flex-col gap-0.5">
             {MOBILE_LINKS.map((l) => (
               <Link
@@ -260,7 +286,7 @@ export default function Navbar() {
                         key={item.href}
                         href={item.href}
                         onClick={() => setMobileOpen(false)}
-                        className="rounded-md px-3 py-2 text-sm text-zinc-500 hover:bg-white/5 hover:text-white"
+                        className="rounded-md px-3 py-2 text-sm text-zinc-400 hover:bg-white/5 hover:text-white"
                       >
                         {item.label}
                       </Link>
@@ -273,19 +299,20 @@ export default function Navbar() {
         </nav>
       )}
 
-      {/* Bottom navigation mobile ala IDLIX */}
+      {/* Bottom navigation mobile */}
       <nav
-        className="mobile-nav-grid fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-page/95 backdrop-blur-xl lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-white/10 bg-page/80 backdrop-blur-xl lg:hidden"
         aria-label="Navigasi bawah"
       >
         {MOBILE_LINKS.map((l) => {
-          const active = l.href === "/" ? pathname === "/" : false;
+          const active = isActive(l.href);
           return (
             <Link
               key={l.href}
               href={l.href}
-              className={`flex flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition ${
-                active ? "text-brand" : "text-zinc-500 hover:text-white"
+              aria-current={active ? "page" : undefined}
+              className={`flex min-h-11 flex-col items-center justify-start gap-1 py-2.5 text-[11px] font-medium transition ${
+                active ? "text-brand" : "text-zinc-400 hover:text-white"
               }`}
             >
               {itemIcon(!active)}

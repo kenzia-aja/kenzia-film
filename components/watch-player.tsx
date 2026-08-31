@@ -96,25 +96,16 @@ export default function WatchPlayer({ slug, ep, title, initialServers, initialEr
     return (
       <div className="grid aspect-video w-full place-items-center bg-black p-8 text-center">
         <div className="max-w-md">
-          <p className="mb-2 text-sm font-semibold text-zinc-300">Gagal memuat sumber video</p>
-          <p className="mb-4 text-xs leading-relaxed text-zinc-500">{error}</p>
+          <p className="mb-2 text-sm font-semibold text-zinc-300">Video belum tersedia</p>
+          <p className="mb-4 text-xs leading-relaxed text-zinc-500">Coba muat ulang halaman atau pilih episode lain.</p>
           <div className="flex flex-wrap justify-center gap-2">
-            <button
-              onClick={handleRetry}
-              className="rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-strong"
-            >
+            <button onClick={handleRetry} className="rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-soft">
               Coba Lagi
             </button>
-            <a
-              href={`/watch/${slug}?ep=${ep}`}
-              className="rounded-md bg-white/10 px-5 py-2.5 text-sm font-semibold text-zinc-300 ring-1 ring-white/10 hover:bg-white/15 hover:text-white"
-            >
+            <a href={`/watch/${slug}?ep=${ep}`} className="rounded-md bg-white/10 px-5 py-2.5 text-sm font-semibold text-zinc-300 ring-1 ring-white/10 hover:bg-white/15 hover:text-white">
               Muat Ulang Halaman
             </a>
           </div>
-          <p className="mt-4 text-[11px] text-zinc-600">
-            Sumber video diambil langsung dari database (Supabase) oleh server web.
-          </p>
         </div>
       </div>
     );

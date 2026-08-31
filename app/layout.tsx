@@ -18,11 +18,11 @@ const bebas = Bebas_Neue({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Kenzia — Nonton Drama & Film Subtitle Indonesia',
-    template: '%s — Kenzia',
+    default: "Kenzia — Drama Asia dan Film Pilihan",
+    template: "%s — Kenzia",
   },
   description:
-    'Streaming drama Korea, China, Jepang, dan film dengan subtitle Indonesia. Cepat, ringan, tanpa ribet.',
+    "Temukan drama Asia dan film pilihan dengan subtitle Indonesia, jadwal rilis, serta katalog yang terus diperbarui.",
   metadataBase: new URL(SITE_URL),
 };
 
@@ -37,13 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Navbar />
         <main className="flex-1 pb-16 lg:pb-0">{children}</main>
         <footer className="relative mt-20 overflow-hidden border-t border-white/10">
-          {/* Glow ambient di footer */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -bottom-32 left-1/2 h-64 w-[80%] -translate-x-1/2 rounded-full bg-brand/10 blur-3xl"
-          />
-
-          <div className="relative mx-auto max-w-[1400px] px-4 py-12 pb-24 lg:pb-12">
+          <div className="relative mx-auto max-w-[1400px] px-4 py-12 pb-24 lg:px-12 lg:py-12">
             {/* Baris brand */}
             <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
               <Link
