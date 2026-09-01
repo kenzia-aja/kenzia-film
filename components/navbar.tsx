@@ -22,17 +22,62 @@ const FILM_SUB: MenuItem[] = [
   { label: "Film Taiwan", href: "/browse?type=Movie&country=Taiwan" },
   { label: "Film Jepang", href: "/browse?type=Movie&country=Japan" },
   { label: "Film Thailand", href: "/browse?type=Movie&country=Thailand" },
-  { label: "Film Taiwan", href: "/browse?type=Movie&Taiwan" },
   { label: "Film India", href: "/browse?type=Movie&country=India" },
   { label: "Film Barat", href: "/browse?type=Movie&country=Barat" },
 ];
 
+const ICON_CLS = "h-[18px] w-[18px]";
+
+function IconHome() {
+  return (
+    <svg className={ICON_CLS} fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="m3 10.5 9-7.5 9 7.5" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5" />
+    </svg>
+  );
+}
+
+function IconFilm() {
+  return (
+    <svg className={ICON_CLS} fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path strokeLinecap="round" d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4" />
+    </svg>
+  );
+}
+
+function IconTv() {
+  return (
+    <svg className={ICON_CLS} fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <rect x="2.5" y="7" width="19" height="13" rx="2" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="m17 2.5-5 5-5-5" />
+    </svg>
+  );
+}
+
+function IconSparkle() {
+  return (
+    <svg className={ICON_CLS} fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3.5 14 10l6.5 2-6.5 2-2 6.5-2-6.5-6.5-2 6.5-2Z" />
+    </svg>
+  );
+}
+
+function IconCalendar() {
+  return (
+    <svg className={ICON_CLS} fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path strokeLinecap="round" d="M8 3v4M16 3v4M3 10h18" />
+    </svg>
+  );
+}
+
 const MOBILE_LINKS = [
-  { label: "Beranda", href: "/" },
-  { label: "Film", href: "/browse?type=Movie" },
-  { label: "Serial TV", href: "/browse?type=Drama" },
-  { label: "Anime", href: "/browse?genre=Animation" },
-  { label: "Jadwal", href: "/jadwal" },
+  { label: "Beranda", href: "/", Icon: IconHome },
+  { label: "Film", href: "/browse?type=Movie", Icon: IconFilm },
+  { label: "Serial TV", href: "/browse?type=Drama", Icon: IconTv },
+  { label: "Anime", href: "/browse?genre=Animation", Icon: IconSparkle },
+  { label: "Jadwal", href: "/jadwal", Icon: IconCalendar },
 ];
 
 function Chevron({ open }: { open?: boolean }) {
@@ -140,22 +185,6 @@ export default function Navbar() {
     if (query) router.push(`/browse?q=${encodeURIComponent(query)}`);
   }
 
-  const itemIcon = (outline: boolean) => (
-    <svg className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-      {outline ? (
-        <>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2 3h4l2 12h11l2.5-8H6.5" />
-          <circle cx="8" cy="18.5" r="1.5" fill="currentColor" />
-          <circle cx="17" cy="18.5" r="1.5" fill="currentColor" />
-        </>
-      ) : (
-        <>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 4h9l5 5v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 9h10" />
-        </>
-      )}
-    </svg>
-  );
 
   return (
     <header
@@ -304,19 +333,19 @@ export default function Navbar() {
         className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-white/10 bg-page/80 backdrop-blur-xl lg:hidden"
         aria-label="Navigasi bawah"
       >
-        {MOBILE_LINKS.map((l) => {
-          const active = isActive(l.href);
+        {MOBILE_LINKS.map(({ label, href, Icon }) => {
+          const active = isActive(href);
           return (
             <Link
-              key={l.href}
-              href={l.href}
+              key={href}
+              href={href}
               aria-current={active ? "page" : undefined}
               className={`flex min-h-11 flex-col items-center justify-start gap-1 py-2.5 text-[11px] font-medium transition ${
                 active ? "text-brand" : "text-zinc-400 hover:text-white"
               }`}
             >
-              {itemIcon(!active)}
-              {l.label}
+              <Icon />
+              {label}
             </Link>
           );
         })}
