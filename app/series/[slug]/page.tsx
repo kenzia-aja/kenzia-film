@@ -7,6 +7,10 @@ import { dedupeAndSortEpisodes } from "@/lib/episodes";
 
 type Params = Promise<{ slug: string }>;
 
+// ISR: render ulang maksimum tiap 5 menit agar sinopsis/detail ikut data terbaru
+export const revalidate = 300;
+
+
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params;
   try {

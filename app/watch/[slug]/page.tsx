@@ -8,6 +8,9 @@ import WatchPlayer from "@/components/watch-player";
 type Params = Promise<{ slug: string }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
+// ISR: render ulang maksimum tiap 5 menit agar sinopsis/server ikut data terbaru
+export const revalidate = 300;
+
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params;
   return { title: `Tonton ${slug}` };
