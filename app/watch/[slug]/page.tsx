@@ -155,6 +155,15 @@ export default async function WatchPage({
         </div>
       </div>
 
+      {series.synopsis && (
+        <div className="mt-6 max-w-3xl">
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">
+            Sinopsis
+          </h2>
+          <p className="leading-relaxed text-zinc-400">{series.synopsis}</p>
+        </div>
+      )}
+
       {!isMovie && episodes.length > 1 && (
         <div className="mt-8 rounded-xl border border-white/5 bg-surface/60 p-4">
           <h2 className="mb-3 text-sm font-bold uppercase tracking-wider text-zinc-400">
