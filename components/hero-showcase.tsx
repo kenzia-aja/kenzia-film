@@ -142,7 +142,7 @@ export default function HeroShowcase({ titles = [] }: Props) {
       </div>
 
       {/* Indikator slide */}
-      <div className="absolute bottom-4 right-6 z-10 flex items-center gap-1.5">
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 sm:left-auto sm:translate-x-0 sm:bottom-28 sm:right-12">
         {titles.map((t, i) => (
           <button
             key={t.slug}

@@ -225,7 +225,7 @@ export default function HomePage() {
       <Hero />
 
       {/* Stats: jarak antara jumbotron dan konten */}
-      <div className="relative z-10 mx-auto -mt-16 max-w-[1400px] px-4 sm:-mt-20">
+      <div className="relative z-10 mx-auto my-6 max-w-[1400px] px-4 sm:-mt-20 sm:my-0">
         <div className="group/stats animate-float-in" style={{ animationDelay: "400ms" }}>
           <Suspense fallback={null}>
             <Stats />
@@ -234,7 +234,7 @@ export default function HomePage() {
       </div>
 
       {/* Update terbaru: series dulu, lalu film */}
-      <div className="mt-14 space-y-12 sm:mt-16">
+      <div className="mt-8 space-y-12 sm:mt-16">
         <Suspense fallback={<SectionRowSkeleton />}>
           <UpdateRow type="Drama" title="Update Series" />
         </Suspense>

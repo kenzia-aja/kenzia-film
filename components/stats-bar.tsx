@@ -60,14 +60,14 @@ function StatItem({
 }) {
   const value = useCountUp(target, active);
   return (
-    <div className="group flex flex-col items-center gap-1.5 px-5 py-6 transition duration-300 hover:bg-white/[0.03] sm:px-8">
+    <div className="group flex flex-col items-center gap-1.5 px-2 py-5 transition duration-300 hover:bg-white/[0.03] sm:px-8 sm:py-6">
       <span className="mb-1 grid h-10 w-10 place-items-center rounded-full bg-brand/15 text-brand transition duration-300 group-hover:scale-110 group-hover:bg-brand group-hover:text-white">
         <StatIcon kind={icon} />
       </span>
       <span className="text-2xl font-extrabold tabular-nums text-white transition group-hover:text-brand-strong sm:text-3xl">
         {value.toLocaleString("id-ID")}
       </span>
-      <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-text-muted">
+      <span className="text-[11px] font-semibold uppercase tracking-[0.2em] pl-[0.2em] text-text-muted">
         {label}
       </span>
     </div>
